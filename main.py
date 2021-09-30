@@ -33,13 +33,22 @@ class Token:
       self.pos)
 
 
+class TokenDiv(Token):
+
+  def __init__(self, symbol: str, line: int, pos: int):
+    self.token_type = Type.Div
+    self.content = symbol
+    self.line = line
+    self.pos = pos
+
+
 class TokenIndent(Token):
 
-  def Token(self, indent: bool, line: int, pos: int):
-    super().token_type = Type.Div
-    super().content = "indent" if indent else "dedent"
-    super().line = line
-    super().pos = pos
+  def __init__(self, indent: bool, line: int, pos: int):
+    self.token_type = Type.Div
+    self.content = "indent" if indent else "dedent"
+    self.line = line
+    self.pos = pos
 
 
 class AbstractPattern:
@@ -61,11 +70,20 @@ class PatternNumber(AbstractPattern):
     token.content = match
     return token
 
+class PatternDiv(AbstractPattern):
+  regex = r",|(|){|}|:"
 
-patterns = [PatternNumber()]
+  def token(self, match: str, pos: int, line: int):
+    token = super().token(match, pos, line)
+    token.token_type = Type.Num
+    token.content = match
+    return token
+
+patterns = [PatternNumber(), PatternDiv()]
 
 
 def main(text):
+  print("Code: \n", text)
   tokens = []
   pos = 0
   line = 0
@@ -76,12 +94,33 @@ def main(text):
       res = re.search("^" + pattern.regex, text)
       if res is not None:
         endpos = res.regs[0][1]
-        token = pattern.token(text[0:endpos], pos, line)
+        token = pattern.token(text[0:endpos], line, pos)
         text = text[endpos:]
         suc = True
         tokens.append(token)
         pos += endpos
         break
+
+    if not suc:
+      res = re.match("\n", text)
+      if res is not None:
+        text = text[1:]
+        tokens.append(TokenDiv('newline', line, pos))
+        pos = 0
+        line += 1
+
+        res = re.search("^ +", text)
+        if res is not None:
+          endpos = res.regs[0][1]
+        else:
+          endpos = 0
+        for i in range(abs(endpos - indent_level)):
+          tokens.append(TokenIndent(endpos > indent_level, line, pos))
+          pos += 1
+        indent_level = endpos
+        text = text[endpos:]
+
+        suc = True
 
     if not suc:
       res = re.search("^ +", text)
@@ -91,28 +130,15 @@ def main(text):
         text = text[endpos:]
         suc = True
 
-    if not suc:
-      res = re.match("\n", text)
-      if res is not None:
-        pos = 0
-        line += 1
-        text = text[1:]
-      res = re.search("^\t", text)
-      if res is not None:
-        endpos = res.regs[0][1]
-        for i in range(abs(endpos - indent_level)):
-          tokens.append(TokenIndent(endpos > indent_level, pos, line))
-          pos += 1
-  
   for token in tokens:
     print(token)
 
 
 def run_tests():
   # 0 test case
-  code_text = r"""
+  code_text = u"""
   42.354e-42
-  """
+"""
   main(code_text)
   # 1 test case
   code_text = r"""
