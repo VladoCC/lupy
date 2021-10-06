@@ -1,22 +1,16 @@
 from enum import Enum
 import re
 
-
-# СЕКЦИЯ С ГОВНОКОДОМ
-# float number regex: [+-]?(\d+([.]\d*)?([eE][+-]?\d+)?|[.]\d+([eE][+-]?\d+)?)
-
 class Type(Enum):
   Ident = 0
-  Num = 1
-  String = 2
-  Op = 3
-  Div = 4
-  Const = 5
-  KeyWord = 6
-
+  KeyWord = 1
+  Op = 2
+  Div = 3
+  Num = 4
+  String = 5
 
 class Token:
-  token_type = Type.Const
+  token_type = Type.Ident
   content = ""
   line = 0
   pos = 0
@@ -32,7 +26,6 @@ class Token:
       self.line,
       self.pos)
 
-
 class TokenDiv(Token):
 
   def __init__(self, symbol: str, line: int, pos: int):
@@ -40,7 +33,6 @@ class TokenDiv(Token):
     self.content = symbol
     self.line = line
     self.pos = pos
-
 
 class TokenIndent(Token):
 
@@ -50,37 +42,43 @@ class TokenIndent(Token):
     self.line = line
     self.pos = pos
 
-
 class AbstractPattern:
   regex = ""
 
-  def token(self, match: str, pos: int, line: int):
+  def token(self, match: str, line: int, pos: int):
     token = Token()
-    token.pos = pos
     token.line = line
+    token.pos = pos
     return token
-
 
 class PatternNumber(AbstractPattern):
   regex = r"[+-]?(\d+([.]\d*)?([eE][+-]?\d+)?|[.]\d+([eE][+-]?\d+)?)"
 
-  def token(self, match: str, pos: int, line: int):
-    token = super().token(match, pos, line)
+  def token(self, match: str, line: int, pos: int):
+    token = super().token(match, line, pos)
     token.token_type = Type.Num
     token.content = match
     return token
 
 class PatternDiv(AbstractPattern):
-  regex = r",|(|){|}|:"
+  regex = r"(?:,|\(|\)|{|}|:)"
 
-  def token(self, match: str, pos: int, line: int):
-    token = super().token(match, pos, line)
-    token.token_type = Type.Num
+  def token(self, match: str, line: int, pos: int):
+    token = super().token(match, line, pos)
+    token.token_type = Type.Div
     token.content = match
     return token
 
-patterns = [PatternNumber(), PatternDiv()]
+class PatternOperator(AbstractPattern):
+  regex = r"(?:\+|\-|\*{1,2}|\/|\%|={1,2}|!=|<|>|<=|>=|\bnot\b|\band\b|\bor\b|\bin\b)"
 
+  def token(self, match: str, line: int, pos: int):
+    token = super().token(match, line, pos)
+    token.token_type = Type.Op
+    token.content = match
+    return token
+
+patterns = [PatternNumber(), PatternDiv(), PatternOperator()]
 
 def main(text):
   print("Code: \n", text)
@@ -133,11 +131,10 @@ def main(text):
   for token in tokens:
     print(token)
 
-
 def run_tests():
   # 0 test case
-  code_text = u"""
-  42.354e-42
+  code_text = r"""
+  42.354e-42 * 9.2e+1
 """
   main(code_text)
   # 1 test case
@@ -163,8 +160,5 @@ def run_tests():
    """
   main(code_text)
 
-
 if __name__ == '__main__':
   run_tests()
-
-# КОНЕЦ СЕКЦИИ С ГОВНОКОДОМ
