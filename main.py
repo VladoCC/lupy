@@ -80,6 +80,15 @@ class PatternOperator(AbstractPattern):
     token.content = match
     return token
 
+  class PatternKey(AbstractPattern)
+    regex = r"/^(def|return|break|continue|pass|for|while|if|elif|else|print|len|dict|True|False|None){1}$/"
+
+    def token(self, match: str, line: int, pos: int):
+      token = super().token(match, line, pos)
+      token.token_type = Type.Op
+      token.content = match
+      return token
+    
 patterns = [PatternNumber(), PatternDiv(), PatternOperator()]
 
 def main(text):
