@@ -89,8 +89,8 @@ class PatternKey(AbstractPattern):
     token.content = match
     return token
 
-class PatternStr(AbstractPattern):
-  regex = r"(?:'(?:[^'\\]|\\.)*'|\"(?:[^\"\\]|\\.)*\")"
+class PatternString(AbstractPattern):
+  regex = r"\"[^\".]{0,}\"|'[^'.]{0,}'"
 
   def token(self, match: str, line: int, pos: int):
     token = super().token(match, line, pos)
