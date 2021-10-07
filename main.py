@@ -1,6 +1,8 @@
 from enum import Enum
 import re
 
+#^(\D\w*)+$ - Identodier regular expression
+
 class Type(Enum):
   Ident = 0
   KeyWord = 1
