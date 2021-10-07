@@ -88,13 +88,13 @@ class PatternKey(AbstractPattern):
     token.token_type = Type.KeyWord
     token.content = match
     return token
-    
- class PatternStr(AbstractPattern):
-  regex = r"(?:'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*")"
+
+class PatternStr(AbstractPattern):
+  regex = r"(?:'(?:[^'\\]|\\.)*'|\"(?:[^\"\\]|\\.)*\")"
 
   def token(self, match: str, line: int, pos: int):
     token = super().token(match, line, pos)
-    token.token_type = Type.StrWord
+    token.token_type = Type.String
     token.content = match
     return token
 
@@ -154,7 +154,7 @@ def main(text):
 def run_tests():
   # 0 test case
   code_text = r"""
-  42.354e-42 * 9.2e+1 = True
+  42.354e-42 * 9.2e+1 = "hello"
 """
   main(code_text)
   # 1 test case
