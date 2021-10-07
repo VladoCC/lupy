@@ -89,7 +89,16 @@ class PatternKey(AbstractPattern):
     token.content = match
     return token
     
-patterns = [PatternNumber(), PatternDiv(), PatternOperator(), PatternKey()]
+ class PatternStr(AbstractPattern):
+  regex = r"(?:'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*")"
+
+  def token(self, match: str, line: int, pos: int):
+    token = super().token(match, line, pos)
+    token.token_type = Type.StrWord
+    token.content = match
+    return token
+
+patterns = [PatternNumber(), PatternDiv(), PatternOperator(), PatternKey(), PatternStr()]
 
 def main(text):
   print("Code: \n", text)
