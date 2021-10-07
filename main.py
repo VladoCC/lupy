@@ -98,7 +98,7 @@ class PatternString(AbstractPattern):
     token.content = match
     return token
 
-patterns = [PatternNumber(), PatternDiv(), PatternOperator(), PatternKey(), PatternStr()]
+patterns = [PatternNumber(), PatternDiv(), PatternOperator(), PatternKey(), PatternString()]
 
 def main(text):
   print("Code: \n", text)
