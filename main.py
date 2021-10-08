@@ -1,8 +1,6 @@
 from enum import Enum
 import re
 
-#^(\D\w*)+$ - Identodier regular expression
-
 class Type(Enum):
   Ident = 0
   KeyWord = 1
@@ -98,7 +96,16 @@ class PatternString(AbstractPattern):
     token.content = match
     return token
 
-patterns = [PatternNumber(), PatternDiv(), PatternOperator(), PatternKey(), PatternString()]
+class PatternIdentifyer(AbstractPattern):
+  regex = r"#^(\D\w*)+$"
+
+  def token(self, match: str, line: int, pos: int):
+    token = super().token(match, line, pos)
+    token.token_type = Type.Ident
+    token.content = match
+    return token
+
+patterns = [PatternIdentifyer(), PatternNumber(), PatternDiv(), PatternOperator(), PatternKey(), PatternString()]
 
 def main(text):
   print("Code: \n", text)
