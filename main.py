@@ -97,7 +97,7 @@ class PatternString(AbstractPattern):
     return token
 
 class PatternIdentifyer(AbstractPattern):
-  regex = r"#^(\D\w*)+$"
+  regex = r"[A-Za-z_][A-Za-z_0-9]*"
 
   def token(self, match: str, line: int, pos: int):
     token = super().token(match, line, pos)
@@ -161,7 +161,7 @@ def main(text):
 def run_tests():
   # 0 test case
   code_text = r"""
-  42.354e-42 * 9.2e+1 = "hello"
+  42.354e-42 * 9.2e+1 = hello
 """
   main(code_text)
   # 1 test case
