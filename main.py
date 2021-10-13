@@ -79,7 +79,7 @@ class PatternOperator(AbstractPattern):
     return token
 
 class PatternKey(AbstractPattern):
-  regex = r"(?:def |return |break|continue|pass|for |while |if |elif |else:|print|len|dict|True|False|None)"
+  regex = r"(?:\bdef\b|\breturn\b|\bbreak\b|\bcontinue\b|\bpass\b|\bfor\b|\bwhile\b|\bif\b|\belif\b|\belse\b|\bprint\b|\blen\b|\bdict\b|\bTrue\b|\bFalse\b|\bNone\b)"
 
   def token(self, match: str, line: int, pos: int):
     token = super().token(match, line, pos)
@@ -88,7 +88,7 @@ class PatternKey(AbstractPattern):
     return token
 
 class PatternString(AbstractPattern):
-  regex = r"\"[^\".]{0,}\"|'[^'.]{0,}'"
+  regex = r"(?:\".*\"|\'.*\')"
 
   def token(self, match: str, line: int, pos: int):
     token = super().token(match, line, pos)
@@ -161,7 +161,7 @@ def main(text):
 def run_tests():
   # 0 test case
   code_text = r"""
-  42.354e-42 * 9.2e+1 = hello
+  42.354e-42 * 9.2e+1 = True
 """
   main(code_text)
   # 1 test case
