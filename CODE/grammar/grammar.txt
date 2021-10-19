@@ -1,0 +1,4 @@
+# do not remove this rule, it's necessary for Earley parser to work
+S -> <program>
+
+<program> -> <sentence> | <function> | <sentence> <program> | <function> <program>
