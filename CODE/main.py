@@ -33,4 +33,4 @@ if __name__ == '__main__':
 		py_code = open(file, "r").read()
 		lua_code = translate(py_code)
 		print(lua_code)
-		open("output\\" + file[5:-2] + "lua", "w").write(lua_code)
+		open("output/" + file[5:-2] + "lua", "w").write(lua_code)

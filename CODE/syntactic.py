@@ -244,7 +244,7 @@ class EarleyParser(object):
 	given grammar.
 	"""
 
-	def __init__(self, sentence, grammar=Grammar.load_grammar("grammar\\grammar.txt")):
+	def __init__(self, sentence, grammar=Grammar.load_grammar("grammar/grammar.txt")):
 		self.words = sentence.split()
 		self.grammar = grammar
 
