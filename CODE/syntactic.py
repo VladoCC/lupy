@@ -257,7 +257,7 @@ class EarleyParser(object):
 
 		for rule in self.grammar[state.next()]:
 			self.chart[pos].add(EarleyState(rule, dot=0,
-			                                sent_pos=state.chart_pos, chart_pos=state.chart_pos))
+			                                sent_pos=state.chart_pos, chart_pos=pos))
 
 	def scanner(self, state, pos):
 		"""
@@ -265,23 +265,23 @@ class EarleyParser(object):
 		"""
 
 		if state.chart_pos < len(self.words):
-			word = self.words[state.chart_pos]
+			word =  self.words[pos] if len(self.words) > pos else ""
 
-			if any((word in r) for r in self.grammar[state.next()]):
-				self.chart[pos + 1].add(EarleyState(Rule(state.next(), [word]),
-				                                    dot=1, sent_pos=state.chart_pos,
-				                                    chart_pos=(state.chart_pos + 1)))
+			if word == state.next():
+				self.chart[pos + 1].add(EarleyState(state.rule,
+				                                    dot=state.dot + 1, sent_pos=state.chart_pos,
+				                                    chart_pos=(state.chart_pos)))
 
 	def completer(self, state, pos):
 		"""
 		Earley Completer.
 		"""
 
-		for prev_state in self.chart[state.sent_pos]:
+		for prev_state in self.chart[state.chart_pos]:
 			if prev_state.next() == state.rule.lhs:
 				self.chart[pos].add(EarleyState(prev_state.rule,
 				                                dot=(prev_state.dot + 1), sent_pos=prev_state.sent_pos,
-				                                chart_pos=pos,
+				                                chart_pos=prev_state.chart_pos,
 				                                back_pointers=(prev_state.back_pointers + [state])))
 
 	def parse(self):
@@ -290,14 +290,13 @@ class EarleyParser(object):
 		chart.
 		"""
 
-		# Checks whether the next symbol for the given state is a tag.
-		def is_tag(state):
-			return self.grammar.is_tag(state.next())
+		def is_terminal(state):
+			return self.grammar.is_terminal(state.next())
 
-		for i in range(len(self.chart)):
+		for i in range(len(self.words) + 1):
 			for state in self.chart[i]:
 				if not state.is_complete():
-					if is_tag(state):
+					if is_terminal(state):
 						self.scanner(state, i)
 					else:
 						self.predictor(state, i)
@@ -322,7 +321,7 @@ class EarleyParser(object):
 		"""
 
 		def get_helper(state):
-			if self.grammar.is_tag(state.rule.lhs):
+			if len(state.back_pointers) == 0:
 				return Tree(state.rule.lhs, [state.rule.rhs[0]])
 
 			return Tree(state.rule.lhs,
@@ -330,7 +329,7 @@ class EarleyParser(object):
 
 		for state in self.chart[-1]:
 			if state.is_complete() and state.rule.lhs == 'S' and \
-				state.sent_pos == 0 and state.chart_pos == len(self.words):
+				state.sent_pos == 0:
 				return get_helper(state)
 
 		return None

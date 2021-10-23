@@ -2,20 +2,6 @@
 S -> <program>
 
 <program> -> <sentence> | <function> | <sentence> <program> | <function> <program>
-<Number> -> 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
-<Numbers> -> <Number><Numbers> | <Number>
-<digit> -> <sign><real> | <sign><real><exponent> | <real> | <real><exponent>
-<real> -> <Numbers>.<Numbers>| .<Numbers> | <Numbers>. | <Numbers>
-<exponent> -> e<sign><Numbers> | E<sign><Numbers> | e<Numbers> | E<Numbers>
-<sign> -> + | -
-<String> -> "<quotes_String> | '<apostrophe_String>
-<quotes_String> -> <symbols>"
-<apostrophe_String> -> <symbols>'
-<symbols> -> <symbol><symbols> | <symbol>
-<symbol> -> \U0000<unicode_four> | \U000<unicode_five> | 0<symbol> | 1<symbol> | 2<symbol> | 3<symbol> | 4<symbol> | 5<symbol> | 6<symbol> | 7<symbol> | 8<symbol> | 9<symbol> | A<symbol> | B<symbol> | C<symbol> | D<symbol> | E<symbol> | F<symbol> | G<symbol> | H<symbol> | I<symbol> | J<symbol> | K<symbol> | L<symbol> | M<symbol> | N<symbol> | O<symbol> | P<symbol> | Q<symbol> | R<symbol> | S<symbol> | T<symbol> | U<symbol> | V<symbol> | W<symbol> | X<symbol> | Y<symbol> | Z<symbol> | a<symbol> | b<symbol> | c<symbol> | d<symbol> | e<symbol> | f<symbol> | g<symbol> | h<symbol> | i<symbol> | j<symbol> | k<symbol> | l<symbol> | m<symbol> | n<symbol> | o<symbol> | p<symbol> | q<symbol> | r<symbol> | s<symbol> | t<symbol> | u<symbol> | v<symbol> | w<symbol> | x<symbol> | y<symbol> | z<symbol> | _<symbol>
-<unicode_four> -> <unicode_character><unicode_character><unicode_character><unicode_character>
-<unicode_five> -> <unicode_character><unicode_character><unicode_character><unicode_character><unicode_character>
-<unicode character> -> 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | A | B | C | D | E | F
 <boolean> -> True | False
 <logical_operation> -> not | and | or
 <boolean_expressions> -> <boolean> | <Identifier> | <boolean_expressions> <logical_operation> <boolean_expressions> | <comparison_expressions>
@@ -24,7 +10,7 @@ S -> <program>
 <first_priority> -> <second_priority> + <first_priority> | <second_priority> - <first_priority> | <second_priority>
 <second_priority> -> <third_priority> * <second_priority> | <third_priority> / <second_priority> | <third_priority> % <second_priority> | <third_priority>
 <third_priority> -> <fourth_priority> ** <third_priority> | <fourth_priority>
-<fourth_priority> -> (<first_priority>) | <digit> | <Identifier> | <function_call> | <length_expressions>
+<fourth_priority> -> (<first_priority>) | <Number> | <Identifier> | <function_call> | <length_expressions>
 <length_expressions> -> len ( <function_call> ) | len ( <Identifier> ) | len ( <collection> )
 <String_expressions> -> <String> | <function_call> | <String> + <String_expressions> | <String_expressions> + <Identifier> | <Identifier> + <String_expressions> | <String_expressions> + <Identifier> + <String_expressions>
 <concatenated_expressions> -> <String_expressions> | <mathematical_expressions> | <boolean_expressions> | <function_call> | <collection>
