@@ -188,7 +188,12 @@ class Chart(object):
 
 
 class EarleyParser(object):
-	def __init__(self, sentence, grammar=Grammar.load_grammar("grammar\\grammar.txt")):
+	def __init__(self, tokens, grammar=Grammar.load_grammar("grammar\\grammar.txt")):
+		self.tokens = tokens.copy()
+		sentence = ""
+		for token in tokens:
+			sentence += token.as_symbol() + " "
+		sentence = sentence[:-1]
 		self.words = sentence.split()
 		self.grammar = grammar
 
@@ -242,9 +247,6 @@ class EarleyParser(object):
 
 	def get(self):
 		def get_helper(state):
-			if len(state.back_pointers) == 0:
-				return Tree(state.rule.lhs, state.rule.rhs)
-
 			children = []
 			for s in state.rule.rhs:
 				pointer = None
@@ -252,7 +254,11 @@ class EarleyParser(object):
 					if p.rule.lhs == s:
 						pointer = p
 						break
-				children.append(s if pointer is None else get_helper(pointer))
+				if pointer is None:
+					token = self.tokens.pop(0)
+					children.append(s if not s.startswith("<") else Tree(s, [token.content]))
+				else:
+					children.append(get_helper(pointer))
 			return Tree(state.rule.lhs, children)
 
 		for state in self.chart[-1]:

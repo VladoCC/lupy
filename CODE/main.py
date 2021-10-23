@@ -16,9 +16,10 @@ def translate(code):
 
 	print(token_line)
 
-	parser = EarleyParser(token_line)
+	parser = EarleyParser(tokens)
 	parser.parse()
 	tree = parser.get()
+
 	if tree is not None:
 		tree.draw()
 	else:
