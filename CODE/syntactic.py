@@ -4,8 +4,9 @@ import re
 
 
 class Rule(object):
-
 	def __init__(self, lhs, rhs):
+		# Represents the rule 'lhs -> rhs', where lhs is a non-terminal and
+		# rhs is a list of non-terminals and terminals.
 		self.lhs, self.rhs = lhs, rhs
 
 	def __contains__(self, sym):
@@ -31,7 +32,6 @@ class Rule(object):
 
 
 class Grammar(object):
-
 	def __init__(self):
 		# The rules are represented as a dictionary from L.H.S to R.H.S.
 		self.rules = defaultdict(list)
@@ -41,6 +41,7 @@ class Grammar(object):
 
 	@staticmethod
 	def load_grammar(file):
+
 		grammar = Grammar()
 
 		with open(file) as f:
@@ -72,6 +73,7 @@ class Grammar(object):
 
 		return '\n'.join(s)
 
+	# Returns the rules for a given Non-terminal.
 	def __getitem__(self, nt):
 		return self.rules[nt]
 
@@ -80,26 +82,34 @@ class Grammar(object):
 
 	def is_tag(self, sym):
 		if not self.is_terminal(sym):
-			return all(self.is_terminal(s) for r in self.rules[sym] for s in r.rhs)
+			return all(self.is_terminal(s) for r in self.rules[sym] for s in
+			           r.rhs)
 
 		return False
 
 
 class EarleyState(object):
-	VS = '<VS>'
+	GAM = '<GAM>'
 
 	def __init__(self, rule, dot=0, sent_pos=0, chart_pos=0, back_pointers=None):
+		# CFG Rule.
 		if back_pointers is None:
 			back_pointers = []
 		self.rule = rule
+		# Dot position in the rule.
 		self.dot = dot
+		# Sentence position.
 		self.sent_pos = sent_pos
+		# Chart index.
 		self.chart_pos = chart_pos
+		# Pointers to child states (if the given state was generated using
+		# Completer).
 		self.back_pointers = back_pointers
 
 	def __eq__(self, other):
 		if type(other) is EarleyState:
-			return self.rule == other.rule and self.dot == other.dot and self.sent_pos == other.sent_pos
+			return self.rule == other.rule and self.dot == other.dot and \
+			       self.sent_pos == other.sent_pos
 
 		return False
 
@@ -128,11 +138,12 @@ class EarleyState(object):
 
 	@staticmethod
 	def init():
-		return EarleyState(Rule(EarleyState.VS, ['S']))
+		return EarleyState(Rule(EarleyState.GAM, ['S']))
 
 
 class ChartEntry(object):
 	def __init__(self, states):
+		# List of Earley states.
 		self.states = states
 
 	def __iter__(self):
@@ -154,6 +165,7 @@ class ChartEntry(object):
 
 class Chart(object):
 	def __init__(self, entries):
+		# List of chart entries.
 		self.entries = entries
 
 	def __getitem__(self, i):
@@ -166,16 +178,17 @@ class Chart(object):
 		return self.__str__()
 
 	def __str__(self):
-		return '\n\n'.join([("Chart[%d]:\n" % i) + str(entry) for i, entry in enumerate(self.entries)])
+		return '\n\n'.join([("Chart[%d]:\n" % i) + str(entry) for i, entry in
+		                    enumerate(self.entries)])
 
 	@staticmethod
 	def init(l):
-		return Chart([(ChartEntry([]) if i > 0 else ChartEntry([EarleyState.init()])) for i in range(l)])
+		return Chart([(ChartEntry([]) if i > 0 else
+		               ChartEntry([EarleyState.init()])) for i in range(l)])
 
 
 class EarleyParser(object):
-
-	def __init__(self, sentence, grammar=Grammar.load_grammar("grammar/grammar.txt")):
+	def __init__(self, sentence, grammar=Grammar.load_grammar("grammar\\grammar.txt")):
 		self.words = sentence.split()
 		self.grammar = grammar
 
@@ -184,37 +197,40 @@ class EarleyParser(object):
 	def predictor(self, state, pos):
 		for rule in self.grammar[state.next()]:
 			self.chart[pos].add(EarleyState(rule, dot=0,
-			                                sent_pos=state.chart_pos, chart_pos=state.chart_pos))
+			                                sent_pos=state.chart_pos, chart_pos=pos))
 
 	def scanner(self, state, pos):
 		if state.chart_pos < len(self.words):
-			word = self.words[state.chart_pos]
+			word =  self.words[pos] if len(self.words) > pos else ""
 
-			if any((word in r) for r in self.grammar[state.next()]):
-				self.chart[pos + 1].add(EarleyState(Rule(state.next(), [word]), dot=1, sent_pos=state.chart_pos, chart_pos=(state.chart_pos + 1)))
+			if word == state.next():
+				self.chart[pos + 1].add(EarleyState(state.rule,
+				                                    dot=state.dot + 1, sent_pos=state.chart_pos,
+				                                    chart_pos=(state.chart_pos),
+				                                    back_pointers = state.back_pointers))
 
 	def completer(self, state, pos):
-		for prev_state in self.chart[state.sent_pos]:
+		for prev_state in self.chart[state.chart_pos]:
 			if prev_state.next() == state.rule.lhs:
+				test = (prev_state.back_pointers + [state])
 				self.chart[pos].add(EarleyState(prev_state.rule,
-				                                dot=(prev_state.dot + 1), sent_pos=prev_state.sent_pos, chart_pos=pos,
+				                                dot=(prev_state.dot + 1), sent_pos=prev_state.chart_pos,
+				                                chart_pos=prev_state.chart_pos,
 				                                back_pointers=(prev_state.back_pointers + [state])))
 
 	def parse(self):
-		def is_tag(state):
-			return self.grammar.is_tag(state.next())
+		def is_terminal(state):
+			return self.grammar.is_terminal(state.next())
 
-		for i in range(len(self.chart)):
+		for i in range(len(self.words) + 1):
 			for state in self.chart[i]:
 				if not state.is_complete():
-					if is_tag(state):
+					if is_terminal(state):
 						self.scanner(state, i)
 					else:
 						self.predictor(state, i)
 				else:
 					self.completer(state, i)
-
-		return self.get()
 
 	def has_parse(self):
 		for state in self.chart[-1]:
@@ -226,15 +242,21 @@ class EarleyParser(object):
 
 	def get(self):
 		def get_helper(state):
-			if self.grammar.is_tag(state.rule.lhs):
-				return Tree(state.rule.lhs, [state.rule.rhs[0]])
+			if len(state.back_pointers) == 0:
+				return Tree(state.rule.lhs, state.rule.rhs)
 
-			return Tree(state.rule.lhs,
-			            [get_helper(s) for s in state.back_pointers])
+			children = []
+			for s in state.rule.rhs:
+				pointer = None
+				for p in state.back_pointers:
+					if p.rule.lhs == s:
+						pointer = p
+						break
+				children.append(s if pointer is None else get_helper(pointer))
+			return Tree(state.rule.lhs, children)
 
 		for state in self.chart[-1]:
-			if state.is_complete() and state.rule.lhs == 'S' and \
-				state.sent_pos == 0 and state.chart_pos == len(self.words):
+			if state.is_complete() and state.rule.lhs == 'S':
 				return get_helper(state)
 
 		return None

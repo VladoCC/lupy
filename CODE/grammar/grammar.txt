@@ -2,3 +2,41 @@
 S -> <program>
 
 <program> -> <sentence> | <function> | <sentence> <program> | <function> <program>
+<boolean> -> True | False
+<logical_operation> -> not | and | or
+<boolean_expressions> -> <boolean> | <Identifier> | <boolean_expressions> <logical_operation> <boolean_expressions> | <comparison_expressions>
+<comparison_expressions> -> <mathematical_expressions> <comparison_operations <mathematical_expressions> | <String_expressions> <equivalence_operations><String_expressions>
+<mathematical_expressions> -> <first_priority>
+<first_priority> -> <second_priority> + <first_priority> | <second_priority> - <first_priority> | <second_priority>
+<second_priority> -> <third_priority> * <second_priority> | <third_priority> / <second_priority> | <third_priority> % <second_priority> | <third_priority>
+<third_priority> -> <fourth_priority> ** <third_priority> | <fourth_priority>
+<fourth_priority> -> (<first_priority>) | <Number> | <Identifier> | <function_call> | <length_expressions>
+<length_expressions> -> len ( <function_call> ) | len ( <Identifier> ) | len ( <collection> )
+<String_expressions> -> <String> | <function_call> | <String> + <String_expressions> | <String_expressions> + <Identifier> | <Identifier> + <String_expressions> | <String_expressions> + <Identifier> + <String_expressions>
+<concatenated_expressions> -> <Identifier> | <String_expressions> | <mathematical_expressions> | <boolean_expressions> | <function_call> | <collection>
+<left_expressions> -> <Identifier> | <String_expressions> | <mathematical_expressions> | <boolean_expressions> | <function_call>
+<function_call> -> <Identifier> ( <arguments> ) | <Identifier> ()
+<output> -> print ( <concatenated_expressions> )
+<assignment> -> <Identifier> = <concatenated_expressions>
+<comparison_operations -> < | <= | > | >= | <equivalence_operations>
+<equivalence_operations> -> != | ==
+<simple_sentence> -> <sentence_body> newline | newline
+<complex_sentence> -> <condition> | <cycle>
+<sentence> -> <simple_sentence> | <complex_sentence>
+<sentence_body> -> <concatenated_expressions> | <output> | <assignment> | pass | return <concatenated_expressions> | len(<function_call>)
+<sentences> -> <sentence><sentences> | <sentence>
+<block> -> <simple_sentence> | newline INDENT <sentences> DEDENT
+<condition> -> if <boolean_expressions>: <block><otherwise> | if <boolean_expressions>: <block>
+<otherwise> -> elif <condition> | else: <block>
+<expressions> -> <concatenated_expressions>, <expressions> | <concatenated_expressions>
+<simple_arguments> -> <expressions>
+<named_expression> -> <assignment>, <named_expression> | <assignment>
+<named_arguments> -> <named_expression>
+<arguments> -> <simple_arguments> | <named_arguments>
+<match> -> <left_expressions>: <concatenated_expressions>
+<matches> -> <match>, <matches> | <match>
+<collection> -> dict(<named_arguments>) | dict() | {<arguments>} | {<matches>} | {}
+<cycle> -> <cycle> | <for_loop>
+<cycle> -> while <boolean_expressions>: <block>
+<for_loop> -> for <Identifier> in <collection>: <block>
+<function> -> def <Identifier>(<Identifiers>): <block>
