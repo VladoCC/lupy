@@ -91,8 +91,10 @@ class Grammar(object):
 class EarleyState(object):
 	GAM = '<GAM>'
 
-	def __init__(self, rule, dot=0, sent_pos=0, chart_pos=0, back_pointers=[]):
+	def __init__(self, rule, dot=0, sent_pos=0, chart_pos=0, back_pointers=None):
 		# CFG Rule.
+		if back_pointers is None:
+			back_pointers = []
 		self.rule = rule
 		# Dot position in the rule.
 		self.dot = dot
@@ -204,13 +206,15 @@ class EarleyParser(object):
 			if word == state.next():
 				self.chart[pos + 1].add(EarleyState(state.rule,
 				                                    dot=state.dot + 1, sent_pos=state.chart_pos,
-				                                    chart_pos=(state.chart_pos)))
+				                                    chart_pos=(state.chart_pos),
+				                                    back_pointers = state.back_pointers))
 
 	def completer(self, state, pos):
 		for prev_state in self.chart[state.chart_pos]:
 			if prev_state.next() == state.rule.lhs:
+				test = (prev_state.back_pointers + [state])
 				self.chart[pos].add(EarleyState(prev_state.rule,
-				                                dot=(prev_state.dot + 1), sent_pos=prev_state.sent_pos,
+				                                dot=(prev_state.dot + 1), sent_pos=prev_state.chart_pos,
 				                                chart_pos=prev_state.chart_pos,
 				                                back_pointers=(prev_state.back_pointers + [state])))
 
@@ -239,14 +243,20 @@ class EarleyParser(object):
 	def get(self):
 		def get_helper(state):
 			if len(state.back_pointers) == 0:
-				return Tree(state.rule.lhs, [state.rule.rhs[0]])
+				return Tree(state.rule.lhs, state.rule.rhs)
 
-			return Tree(state.rule.lhs,
-			            [get_helper(s) for s in state.back_pointers])
+			children = []
+			for s in state.rule.rhs:
+				pointer = None
+				for p in state.back_pointers:
+					if p.rule.lhs == s:
+						pointer = p
+						break
+				children.append(s if pointer is None else get_helper(pointer))
+			return Tree(state.rule.lhs, children)
 
 		for state in self.chart[-1]:
-			if state.is_complete() and state.rule.lhs == 'S' and \
-				state.sent_pos == 0:
+			if state.is_complete() and state.rule.lhs == 'S':
 				return get_helper(state)
 
 		return None

@@ -13,8 +13,8 @@ S -> <program>
 <fourth_priority> -> (<first_priority>) | <Number> | <Identifier> | <function_call> | <length_expressions>
 <length_expressions> -> len ( <function_call> ) | len ( <Identifier> ) | len ( <collection> )
 <String_expressions> -> <String> | <function_call> | <String> + <String_expressions> | <String_expressions> + <Identifier> | <Identifier> + <String_expressions> | <String_expressions> + <Identifier> + <String_expressions>
-<concatenated_expressions> -> <String_expressions> | <mathematical_expressions> | <boolean_expressions> | <function_call> | <collection>
-<left_expressions> -> <String_expressions> | <mathematical_expressions> | <boolean_expressions> | <function_call>
+<concatenated_expressions> -> <Identifier> | <String_expressions> | <mathematical_expressions> | <boolean_expressions> | <function_call> | <collection>
+<left_expressions> -> <Identifier> | <String_expressions> | <mathematical_expressions> | <boolean_expressions> | <function_call>
 <function_call> -> <Identifier> ( <arguments> ) | <Identifier> ()
 <output> -> print ( <concatenated_expressions> )
 <assignment> -> <Identifier> = <concatenated_expressions>

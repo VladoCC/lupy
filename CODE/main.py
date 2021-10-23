@@ -20,12 +20,11 @@ def translate(code):
 	parser.parse()
 	tree = parser.get()
 	if tree is not None:
-		tree.pretty_print()
+		tree.draw()
 	else:
 		print("can't parse code: \n", code)
 
 	return ""
-
 
 if __name__ == '__main__':
 	files = [join("input", file) for file in listdir("input") if isfile(join("input", file)) and file.endswith(".py")]
