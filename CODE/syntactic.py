@@ -188,7 +188,7 @@ class Chart(object):
 
 
 class EarleyParser(object):
-	def __init__(self, tokens, grammar=Grammar.load_grammar("grammar\\grammar.txt")):
+	def __init__(self, tokens, grammar=Grammar.load_grammar("grammar/grammar.txt")):
 		self.tokens = tokens.copy()
 		sentence = ""
 		for token in tokens:
