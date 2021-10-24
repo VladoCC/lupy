@@ -1,5 +1,5 @@
-from CODE.main import analyzer, EarleyParser
-from CODE.lexical import Type, TokenIdentifier, TokenKeyword, TokenOperator, TokenNumber, TokenDivider, TokenString, TokenIndent
+from main import analyzer, EarleyParser
+from lexical import Type, TokenIdentifier, TokenKeyword, TokenOperator, TokenNumber, TokenDivider, TokenString, TokenIndent
 import unittest
 
 

@@ -1,8 +1,8 @@
 from os import listdir
 from os.path import isfile, join
 
-from CODE.lexical import LexicalAnalyzer
-from CODE.syntactic import EarleyParser
+from lexical import LexicalAnalyzer
+from syntactic import EarleyParser
 
 analyzer = LexicalAnalyzer()
 
