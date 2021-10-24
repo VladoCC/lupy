@@ -64,7 +64,6 @@ class TokenOperator(NonTerminalToken):
 
 
 class TokenDivider(NonTerminalToken):
-
 	def __init__(self, line: int, pos: int, content: str):
 		super().__init__(line, pos, content)
 
@@ -73,7 +72,6 @@ class TokenDivider(NonTerminalToken):
 
 
 class TokenIndent(TokenDivider):
-
 	def __init__(self, indent: bool, line: int, pos: int):
 		super().__init__(line, pos, "indent" if indent else "dedent")
 

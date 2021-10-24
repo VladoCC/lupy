@@ -27,6 +27,7 @@ def translate(code):
 
 	return ""
 
+
 if __name__ == '__main__':
 	files = [join("input", file) for file in listdir("input") if isfile(join("input", file)) and file.endswith(".py")]
 	for file in files:
