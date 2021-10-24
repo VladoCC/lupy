@@ -1,38 +1,97 @@
-from CODE.main import translate
+from CODE.main import analyzer, EarleyParser
+from CODE.lexical import Type, TokenIdentifier, TokenKeyword, TokenOperator, TokenNumber, TokenDivider, TokenString, TokenIndent
+import unittest
 
 
-def run_tests():
-	# 0 test case
-	code_text = r"""
-42.354e-42 * 9.2e+1 = True
+class TestLexical(unittest.TestCase):
+	def test_identifier(self):
+		code_text = r"""some_variable_name"""
+		received = analyzer.parse(code_text)[0]
+		self.assertIsInstance(received, TokenIdentifier, "This is not an instance of TokenIdentifier class")
+		self.assertIs(received.token_type, Type.Identifier, "This token's token type is not Identifier")
+		self.assertEqual(received.content, "some_variable_name", "This token's content is not correct")
+
+	def test_keyword(self):
+		code_text = r"""True"""
+		received = analyzer.parse(code_text)[0]
+		self.assertIsInstance(received, TokenKeyword, "This is not an instance of TokenKeyword class")
+		self.assertIs(received.token_type, Type.Keyword, "This token's token type is not Keyword")
+		self.assertEqual(received.content, "True", "This token's content is not correct")
+
+	def test_operator(self):
+		code_text = r"""*"""
+		received = analyzer.parse(code_text)[0]
+		self.assertIsInstance(received, TokenOperator, "This is not an instance of TokenOperator class")
+		self.assertIs(received.token_type, Type.Operator, "This token's token type is not Operator")
+		self.assertEqual(received.content, "*", "This token's content is not correct")
+
+	def test_number(self):
+		code_text = r"""42.354e-42"""
+		received = analyzer.parse(code_text)[0]
+		self.assertIsInstance(received, TokenNumber, "This is not an instance of TokenNumber class")
+		self.assertIs(received.token_type, Type.Number, "This token's token type is not Number")
+		self.assertEqual(received.content, "42.354e-42", "This token's content is not correct")
+
+	def test_divider(self):
+		code_text = r"""("""
+		received = analyzer.parse(code_text)[0]
+		self.assertIsInstance(received, TokenDivider, "This is not an instance of TokenDivider class")
+		self.assertIs(received.token_type, Type.Divider, "This token's token type is not Divider")
+		self.assertEqual(received.content, "(", "This token's content is not correct")
+
+	def test_string(self):
+		code_text = r"""'string'"""
+		received = analyzer.parse(code_text)[0]
+		self.assertIsInstance(received, TokenString, "This is not an instance of TokenString class")
+		self.assertIs(received.token_type, Type.String, "This token's token type is not String")
+		self.assertEqual(received.content, "'string'", "This token's content is not correct")
+
+	def test_indent(self):
+		code_text = r"""
+	some_text
 """
-	translate(code_text)
+		received = analyzer.parse(code_text)[1]
+		self.assertIsInstance(received, TokenIndent, "This is not an instance of TokenIndent class")
+		self.assertIs(received.token_type, Type.Divider, "This token's token type is not Divider")
+		self.assertEqual(received.content, "indent", "This token's content is not correct")
 
-	# 1 test case
-	code_text = r"""
-print("Hello, world!")
+	def test_dedent(self):
+		code_text = r"""
+	some_text
 """
-	translate(code_text)
+		received = analyzer.parse(code_text)[4]
+		self.assertIsInstance(received, TokenIndent, "This is not an instance of TokenIndent class")
+		self.assertIs(received.token_type, Type.Divider, "This token's token type is not Divider")
+		self.assertEqual(received.content, "dedent", "This token's content is not correct")
 
-	# 2 test case
-	code_text = r"""
-a = 2
-b = 3
-print(a + b)
-"""
-	translate(code_text)
+	def test_unknown_symbol_error(self):
+		code_text = r"""# here comes some comment"""
+		self.assertRaises(SyntaxError, analyzer.parse, code_text)
 
-	# 3 test case
-	code_text = r"""
-username = 'John'
-magic_number = 3.14159e+0
-if (magic_number > 4):
-	print("What's happen?")
-else:
-	print(len(username))
+
+class TestSyntactic(unittest.TestCase):
+	def test_incorrect_chain(self):
+		code_text = r"""
+a := 1
+print(a)
 """
-	translate(code_text)
+		tokens = analyzer.parse(code_text)
+		parser = EarleyParser(tokens)
+		parser.parse()
+		tree = parser.get()
+		self.assertIsNone(tree, "This code chain is correct")
+
+	def test_correct_chain(self):
+		code_text = r"""
+a = 1
+print(a)
+"""
+		tokens = analyzer.parse(code_text)
+		parser = EarleyParser(tokens)
+		parser.parse()
+		tree = parser.get()
+		self.assertIsNotNone(tree, "This code chain is not correct")
 
 
 if __name__ == '__main__':
-	run_tests()
+	unittest.main()
