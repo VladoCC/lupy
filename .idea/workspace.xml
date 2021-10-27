@@ -2,6 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="cd6357a0-47af-4c78-932a-fb9d3385132f" name="Default Changelist" comment="Working syntactic parser">
+      <change afterPath="$PROJECT_DIR$/DOCS/UML/lexical.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/DOCS/UML/syntactic.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/lupy.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/lupy.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
@@ -49,7 +51,6 @@
     <list>
       <item itemvalue="Python.main" />
       <item itemvalue="Python.test" />
-      <item itemvalue="Python tests.Python tests in test.py" />
     </list>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
@@ -67,6 +68,10 @@
       <workItem from="1634537213636" duration="9287000" />
       <workItem from="1634630163126" duration="8896000" />
       <workItem from="1634950240385" duration="22133000" />
+      <workItem from="1635297278141" duration="272000" />
+      <workItem from="1635297597196" duration="91000" />
+      <workItem from="1635297728810" duration="25000" />
+      <workItem from="1635297777214" duration="340000" />
     </task>
     <task id="LOCAL-00001" summary="Correct config">
       <created>1634953778919</created>
