@@ -187,6 +187,13 @@ class Chart(object):
 		               ChartEntry([EarleyState.init()])) for i in range(l)])
 
 
+class TreeToken:
+	def __init__(self, token):
+		self.token = token
+
+	def __str__(self):
+		return self.token.content
+
 class EarleyParser(object):
 	def __init__(self, tokens, grammar=Grammar.load_grammar("grammar/grammar.txt")):
 		self.tokens = tokens.copy()
@@ -255,8 +262,8 @@ class EarleyParser(object):
 						pointer = p
 						break
 				if pointer is None:
-					token = self.tokens.pop(0)
-					children.append(s if not s.startswith("<") else Tree(s, [token.content]))
+					token = TreeToken(self.tokens.pop(0))
+					children.append(token if not s.startswith("<") else Tree(s, [token]))
 				else:
 					children.append(get_helper(pointer))
 			return Tree(state.rule.lhs, children)
