@@ -25,7 +25,7 @@ S -> <program>
 <sentence> -> <simple_sentence> | <complex_sentence>
 <sentence_body> -> <concatenated_expressions> | <output> | <assignment> | pass | return <concatenated_expressions> | len(<function_call>)
 <sentences> -> <sentence><sentences> | <sentence>
-<block> -> <simple_sentence> | newline INDENT <sentences> DEDENT
+<block> -> <sentence_body> newline | newline INDENT <sentences> DEDENT
 <condition> -> if <boolean_expressions>: <block><otherwise> | if <boolean_expressions>: <block>
 <otherwise> -> elif <condition> | else: <block>
 <expressions> -> <concatenated_expressions>, <expressions> | <concatenated_expressions>
@@ -39,4 +39,4 @@ S -> <program>
 <cycle> -> <cycle> | <for_loop>
 <cycle> -> while <boolean_expressions>: <block>
 <for_loop> -> for <Identifier> in <collection>: <block>
-<function> -> def <Identifier>(<Identifiers>): <block>
+<function> -> def <Identifier> ( <Identifiers> ) : <block> | def <Identifier> ( ) : <block>
