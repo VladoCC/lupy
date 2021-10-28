@@ -1,5 +1,6 @@
 from main import analyzer, EarleyParser
 from lexical import Type, TokenIdentifier, TokenKeyword, TokenOperator, TokenNumber, TokenDivider, TokenString, TokenIndent
+from semantic import SemanticError, SemanticAnalyzer
 import unittest
 
 
@@ -91,6 +92,86 @@ print(a)
 		parser.parse()
 		tree = parser.get()
 		self.assertIsNotNone(tree, "This code chain is not correct")
+
+	def test_empty_func(self):
+		code_text = r"""
+a = 1
+print(a)
+
+def foo():
+	pass
+"""
+		tokens = analyzer.parse(code_text)
+		parser = EarleyParser(tokens)
+		parser.parse()
+		tree = parser.get()
+		self.assertIsNotNone(tree, "This code chain is not correct")
+
+	def test_func_with_multiple_arguments(self):
+		code_text = r"""
+a = 1
+print(a)
+
+def foo():
+	pass
+	
+def baz(f, c, m):
+	print(f)
+
+baz(a, a, a)
+
+"""
+		tokens = analyzer.parse(code_text)
+		parser = EarleyParser(tokens)
+		parser.parse()
+		tree = parser.get()
+		self.assertIsNotNone(tree, "This code chain is not correct")
+
+
+class TestSemantic(unittest.TestCase):
+	def test_correct_program(self):
+		code_text = r"""
+a = 1
+print(a)
+b = 42
+
+def foo():
+	print(a)
+	c = 3
+	
+def baz(a, b):
+	print(b)
+	z = 15
+	
+print(b)
+"""
+		tokens = analyzer.parse(code_text)
+		parser = EarleyParser(tokens)
+		parser.parse()
+		semantic_analyzer = SemanticAnalyzer(parser.get())
+		self.assertTrue(semantic_analyzer.check_tree(), msg="Semantic analyzer isn't working(good code isn't correct).")
+
+	def test_incorrect_program(self):
+		code_text = r"""
+a = 1
+print(a)
+b = 42
+
+def foo():
+	print(a)
+	c = 3
+
+def baz(a, b):
+	print(b)
+	z = 15
+
+print(z)
+		"""
+		tokens = analyzer.parse(code_text)
+		parser = EarleyParser(tokens)
+		parser.parse()
+		semantic_analyzer = SemanticAnalyzer(parser.get())
+		self.assertRaises(SemanticError, semantic_analyzer.check_tree)
 
 
 if __name__ == '__main__':
