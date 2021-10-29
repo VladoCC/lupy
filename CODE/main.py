@@ -3,7 +3,7 @@ from os.path import isfile, join
 
 from lexical import LexicalAnalyzer
 from syntactic import EarleyParser
-from semantic import SemanticAnalyzer
+from semantic import SemanticAnalyzer, SemanticError
 
 analyzer = LexicalAnalyzer()
 
@@ -26,8 +26,10 @@ def translate(code):
 		print("can't parse code: \n", code)
 
 	semantic_analyzer = SemanticAnalyzer(tree)
-	if not semantic_analyzer.check_tree():
-		print("bad semantic in code: \n", code)
+	try:
+		semantic_analyzer.check_tree()
+	except SemanticError as semantic_error:
+		print(semantic_error)
 
 	return ""
 
