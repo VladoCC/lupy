@@ -1,7 +1,7 @@
 a = 1
 print(a)
 b = 42
-
+#aa
 
 def foo():
     print(a)
