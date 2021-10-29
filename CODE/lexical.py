@@ -149,7 +149,14 @@ class LexicalError(Exception):
     def __init__(self, pos, line, code):
         err_line = code.split('\n')[0]
         err_symbol = err_line[0]
-        self.message = f"Incorrect code in position {pos+1} line {line+1}: \"{err_line}\" " + f"\n->{err_symbol}"
+        message = f"Incorrect code in position {pos + 1} line {line + 1}: \"{err_line}\""
+        s = ""
+        for char in message:
+            if char != err_symbol:
+                s+=' '
+            else:
+                s+='↑'
+        self.message = "\n" + message + "\n" + s
         super().__init__(self.message)
 
 
