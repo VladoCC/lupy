@@ -147,16 +147,12 @@ class PatternIdentifier(AbstractPattern):
 
 class LexicalError(Exception):
     def __init__(self, pos, line, code):
-        err_line = code.split('\n')[0]
-        err_symbol = err_line[0]
-        message = f"Incorrect code in position {pos + 1} line {line + 1}: \"{err_line}\""
-        s = ""
-        for char in message:
-            if char != err_symbol:
-                s+=' '
-            else:
-                s+='↑'
-        self.message = "\n" + message + "\n" + s
+        err_line = code.split('\n')[line]
+        err_symbol = err_line[pos]
+        incorrect_line = f"Incorrect code in position {pos + 1} line {line + 1}: "
+        print(incorrect_line + err_line)
+        print(" " * len(incorrect_line) + " " * pos + "↑")
+        self.message = "\n" + incorrect_line + err_line + "\n" + " " * len(incorrect_line) + " " * pos + "↑"
         super().__init__(self.message)
 
 
