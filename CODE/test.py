@@ -67,8 +67,18 @@ class TestLexical(unittest.TestCase):
 		self.assertEqual(received.content, "dedent", "This token's content is not correct")
 
 	def test_unknown_symbol_error(self):
-		code_text = r"""# here comes some comment"""
+		code_text = r"""a = 1
+print(a) # here comes some comment"""
 		self.assertRaises(LexicalError, analyzer.parse, code_text)
+		assertion = False
+		try:
+			analyzer.parse(code_text)
+		except LexicalError as e:
+			if e.message == """
+Incorrect code in position 10 line 2: print(a) # here comes some comment
+                                               ↑""":
+				assertion = True
+		self.assertTrue(assertion, "This code produce LexicalError in a wrong place")
 
 
 class TestSyntactic(unittest.TestCase):
