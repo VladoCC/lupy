@@ -7,6 +7,7 @@ from semantic import SemanticAnalyzer, SemanticError
 
 analyzer = LexicalAnalyzer()
 
+
 def translate(code):
 	tokens = analyzer.parse(code)
 	token_line = ""
