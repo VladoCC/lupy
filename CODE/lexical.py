@@ -198,6 +198,6 @@ class LexicalAnalyzer:
 					suc = True
 
 			if not suc:
-				raise SyntaxError("Incorrect code")
+				raise SyntaxError("Incorrect code \"{}\" in line {} position {}".format(code.split('\n')[0], line+1, pos+1))
 
 		return tokens
