@@ -1,5 +1,6 @@
 from main import analyzer, EarleyParser
-from lexical import Type, TokenIdentifier, TokenKeyword, TokenOperator, TokenNumber, TokenDivider, TokenString, TokenIndent
+from lexical import Type, TokenIdentifier, TokenKeyword, TokenOperator, TokenNumber, TokenDivider, TokenString, \
+	TokenIndent, LexicalError
 from semantic import SemanticError, SemanticAnalyzer
 import unittest
 
@@ -67,7 +68,7 @@ class TestLexical(unittest.TestCase):
 
 	def test_unknown_symbol_error(self):
 		code_text = r"""# here comes some comment"""
-		self.assertRaises(SyntaxError, analyzer.parse, code_text)
+		self.assertRaises(LexicalError, analyzer.parse, code_text)
 
 
 class TestSyntactic(unittest.TestCase):
