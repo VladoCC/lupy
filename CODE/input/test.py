@@ -4,13 +4,14 @@ b = 42
 
 
 def foo():
-    print(a)
-    c = 3
+	print(a)
+	c = 3
 
 
 def baz(a, b):
-    print(b)
-    z = 15
+	print(b)
+	z = 15
 
 
 print(b)
+foo()
