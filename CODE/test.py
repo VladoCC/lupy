@@ -1,5 +1,6 @@
 from main import analyzer, EarleyParser
-from lexical import Type, TokenIdentifier, TokenKeyword, TokenOperator, TokenNumber, TokenDivider, TokenString, TokenIndent
+from lexical import Type, TokenIdentifier, TokenKeyword, TokenOperator, TokenNumber, TokenDivider, TokenString, \
+	TokenIndent, LexicalError
 from semantic import SemanticError, SemanticAnalyzer
 import unittest
 
@@ -66,8 +67,18 @@ class TestLexical(unittest.TestCase):
 		self.assertEqual(received.content, "dedent", "This token's content is not correct")
 
 	def test_unknown_symbol_error(self):
-		code_text = r"""# here comes some comment"""
-		self.assertRaises(SyntaxError, analyzer.parse, code_text)
+		code_text = r"""a = 1
+print(a) # here comes some comment"""
+		self.assertRaises(LexicalError, analyzer.parse, code_text)
+		assertion = False
+		try:
+			analyzer.parse(code_text)
+		except LexicalError as e:
+			if e.message == """
+Incorrect code in position 10 line 2: print(a) # here comes some comment
+                                               ↑""":
+				assertion = True
+		self.assertTrue(assertion, "This code produce LexicalError in a wrong place")
 
 
 class TestSyntactic(unittest.TestCase):
@@ -149,9 +160,9 @@ print(b)
 		parser = EarleyParser(tokens)
 		parser.parse()
 		semantic_analyzer = SemanticAnalyzer(parser.get())
-		semantic_analyzer.check_tree()
+		self.assertTrue(semantic_analyzer.check_tree(), msg="Semantic analyzer isn't working(good code isn't correct).")
 
-	def test_incorrect_identifier(self):
+	def test_incorrect_program(self):
 		code_text = r"""
 a = 1
 print(a)
@@ -167,56 +178,6 @@ def baz(a, b):
 
 print(z)
 		"""
-		tokens = analyzer.parse(code_text)
-		parser = EarleyParser(tokens)
-		parser.parse()
-		semantic_analyzer = SemanticAnalyzer(parser.get())
-		self.assertRaises(SemanticError, semantic_analyzer.check_tree)
-
-	def test_correct_function_call(self):
-		code_text = r"""
-a = 1
-print(a)
-b = 42
-
-def foo():
-	print(a)
-	c = 3
-
-def baz(a, b):
-	print(b)
-	z = 15
-	
-	print(z)
-	
-foo()
-baz(a, a)
-"""
-		tokens = analyzer.parse(code_text)
-		parser = EarleyParser(tokens)
-		parser.parse()
-		semantic_analyzer = SemanticAnalyzer(parser.get())
-		semantic_analyzer.check_tree()
-
-	def test_incorrect_function_call(self):
-		code_text = r"""
-a = 1
-print(a)
-b = 42
-
-def foo():
-	print(a)
-	c = 3
-
-def baz(a, b):
-	print(b)
-	z = 15
-
-	print(z)
-
-foo(a)
-
-"""
 		tokens = analyzer.parse(code_text)
 		parser = EarleyParser(tokens)
 		parser.parse()
