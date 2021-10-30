@@ -33,11 +33,10 @@ S -> <program>
 <simple_arguments> -> <expressions>
 <named_expression> -> <assignment> , <named_expression> | <assignment>
 <named_arguments> -> <named_expression>
-<arguments> -> <simple_arguments> | <named_arguments>
 <match> -> <left_expressions> : <concatenated_expressions>
 <matches> -> <match> , <matches> | <match>
-<collection> -> dict ( <named_arguments> ) | dict ( ) | { <arguments> } | { <matches> } | { }
+<collection> -> dict ( <named_arguments> ) | dict ( ) | { <simple_arguments> } | { <matches> } | { } | [ <simple_arguments> ] | [ ] | <Identifier> | <function_call>
 <cycle> -> <cycle> | <for_loop>
 <cycle> -> while <boolean_expressions> : <block>
-<for_loop> -> for <Identifier> in <collection> : <block>
+<for_loop> -> for <Identifier> in <collection> : <block> | for <Identifier> in range ( <mathematical_expressions> ) : <block> | for <Identifier> in range ( <mathematical_expressions> , <mathematical_expressions> ) : <block>
 <function> -> def <Identifier> ( <Identifiers> ) : <block> | def <Identifier> ( ) : <block>
