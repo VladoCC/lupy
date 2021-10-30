@@ -149,20 +149,20 @@ b = 42
 def foo():
 	print(a)
 	c = 3
-	
+
 def baz(a, b):
 	print(b)
 	z = 15
-	
+
 print(b)
 """
 		tokens = analyzer.parse(code_text)
 		parser = EarleyParser(tokens)
 		parser.parse()
 		semantic_analyzer = SemanticAnalyzer(parser.get())
-		self.assertTrue(semantic_analyzer.check_tree(), msg="Semantic analyzer isn't working(good code isn't correct).")
+		semantic_analyzer.check_tree()
 
-	def test_incorrect_program(self):
+	def test_incorrect_identifier(self):
 		code_text = r"""
 a = 1
 print(a)
@@ -178,6 +178,56 @@ def baz(a, b):
 
 print(z)
 		"""
+		tokens = analyzer.parse(code_text)
+		parser = EarleyParser(tokens)
+		parser.parse()
+		semantic_analyzer = SemanticAnalyzer(parser.get())
+		self.assertRaises(SemanticError, semantic_analyzer.check_tree)
+
+	def test_correct_function_call(self):
+		code_text = r"""
+a = 1
+print(a)
+b = 42
+
+def foo():
+	print(a)
+	c = 3
+
+def baz(a, b):
+	print(b)
+	z = 15
+
+	print(z)
+
+foo()
+baz(a, a)
+"""
+		tokens = analyzer.parse(code_text)
+		parser = EarleyParser(tokens)
+		parser.parse()
+		semantic_analyzer = SemanticAnalyzer(parser.get())
+		semantic_analyzer.check_tree()
+
+	def test_incorrect_function_call(self):
+		code_text = r"""
+a = 1
+print(a)
+b = 42
+
+def foo():
+	print(a)
+	c = 3
+
+def baz(a, b):
+	print(b)
+	z = 15
+
+	print(z)
+
+foo(a)
+
+"""
 		tokens = analyzer.parse(code_text)
 		parser = EarleyParser(tokens)
 		parser.parse()

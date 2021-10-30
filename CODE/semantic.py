@@ -1,9 +1,12 @@
 from collections import defaultdict
 from nltk.tree import Tree, ParentedTree
+from lexical import Token
 
 
 class SemanticError(BaseException):
-    pass
+    def __init__(self, token: Token, *args):
+        super(SemanticError, self).__init__(*args)
+        self.token = token
 
 
 class SemanticAnalyzer(object):
@@ -11,7 +14,6 @@ class SemanticAnalyzer(object):
         self.tree = ParentedTree.convert(tree)
         self.known_identifiers = {'<program>': set()}
         self.known_function_parameters = {}
-        self.known_identifiers_and_their_types = {}
 
     def get_identifiers_with_their_scope(self):
         return self.known_identifiers
@@ -19,11 +21,10 @@ class SemanticAnalyzer(object):
     def get_functions_with_their_parameters(self):
         return self.known_function_parameters
 
-    def check_tree(self) -> bool:
+    def check_tree(self):
         if not self.tree:
-            raise SemanticError('Tree are not set.')
+            raise SemanticError(None, 'Tree are not set.')
         self._check_identifiers()
-        return True
 
     def _get_current_context(self, node: ParentedTree) -> str:
         while node.parent() and node.parent().label() != '<function>':
@@ -34,9 +35,9 @@ class SemanticAnalyzer(object):
         return '<program>'
 
     def _store_function_parameters(self, func: ParentedTree) -> None:
-        for node in func.subtrees():
+        self.known_function_parameters.setdefault(self._get_current_context(func), 0)
+        for node in func.parent().subtrees():
             if node.parent().label() == '<Identifiers>' and node.label() == '<Identifier>':
-                self.known_function_parameters.setdefault(self._get_current_context(node), 0)
                 self.known_function_parameters[self._get_current_context(node)] += 1
 
     def _check_function_parameters(self, func: ParentedTree) -> None:
@@ -46,12 +47,12 @@ class SemanticAnalyzer(object):
             if node.label() == '<expressions>':
                 known_function_parameters += 1
         current_known_parameters = self.known_function_parameters.get(current_context)
-        if (not current_known_parameters or
+        if (current_known_parameters is None or
                 current_known_parameters != known_function_parameters):
-            raise SemanticError(
-                'Parameters in the declaration and function call do not match:\n{}'.format(
-                    str(func.leaves()[0].token)
-                ))
+            raise SemanticError(func.leaves()[0].token,
+                                'Parameters in the declaration and function call do not match:\n{}'.format(
+                                    str(func.leaves()[0].token)
+                                ))
 
     def _check_identifiers(self) -> None:
         for node in self.tree.subtrees():
@@ -64,12 +65,13 @@ class SemanticAnalyzer(object):
                         str(node.leaves()[0]))
                 elif current_node_parent_label == '<function>':
                     self.known_identifiers[str(node.leaves()[0])] = set()
-                    self._store_function_parameters(node.parent())
+                    self._store_function_parameters(node)
                 elif current_node_parent_label == '<Identifiers>':
                     self.known_identifiers[self._get_current_context(node)].add(str(node.leaves()[0]))
                 elif current_node_parent_label == '<function_call>':
                     if str(node.leaves()[0]) not in self.known_identifiers:
                         raise SemanticError(
+                            node.leaves()[0].token,
                             'The function identifier was used before it was announced:\n{}'.format(
                                 str(node.leaves()[0].token)
                             ))
@@ -80,6 +82,8 @@ class SemanticAnalyzer(object):
                          str(node.leaves()[0]) not in current_context) and
                             str(node.leaves()[0]) not in self.known_identifiers['<program>']):
                         raise SemanticError(
+                            node.leaves()[0].token,
                             'The identifier was encountered before it was announced:\n{}'.format(
                                 str(node.leaves()[0].token)
-                            ))
+                            )
+                        )
