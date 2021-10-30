@@ -33,6 +33,7 @@ S -> <program>
 <simple_arguments> -> <expressions>
 <named_expression> -> <assignment> , <named_expression> | <assignment>
 <named_arguments> -> <named_expression>
+<arguments> -> <simple_arguments> | <named_arguments>
 <match> -> <left_expressions> : <concatenated_expressions>
 <matches> -> <match> , <matches> | <match>
 <collection> -> dict ( <named_arguments> ) | dict ( ) | { <simple_arguments> } | { <matches> } | { } | [ <simple_arguments> ] | [ ] | <Identifier> | <function_call>
