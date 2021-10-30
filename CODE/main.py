@@ -1,6 +1,7 @@
 from os import listdir
 from os.path import isfile, join
 
+from generator import generate
 from lexical import LexicalAnalyzer
 from syntactic import EarleyParser
 from semantic import SemanticAnalyzer, SemanticError
@@ -21,7 +22,7 @@ def translate(code):
 	tree = parser.get()
 
 	if tree is not None:
-		tree.draw()
+		tree.pretty_print()
 	else:
 		print("can't parse code: \n", code)
 
@@ -32,7 +33,7 @@ def translate(code):
 		print(semantic_error)
 
 
-	return ""
+	return generate(tokens)
 
 
 if __name__ == '__main__':
