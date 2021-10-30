@@ -197,7 +197,7 @@ def foo():
 def baz(a, b):
 	print(b)
 	z = 15
-
+	
 	print(z)
 
 foo()
