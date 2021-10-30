@@ -107,7 +107,7 @@ class PatternNumber(AbstractPattern):
 
 class PatternDivider(AbstractPattern):
     def regex(self):
-        return r"(?:,|\(|\)|{|}|:)"
+        return r"(?:,|\(|\)|\[|\]|{|}|:)"
 
     def token(self, match: str, line: int, pos: int):
         return TokenDivider(line, pos, match)
@@ -123,7 +123,7 @@ class PatternOperator(AbstractPattern):
 
 class PatternKeyword(AbstractPattern):
     def regex(self):
-        return r"(?:\bdef\b|\breturn\b|\bbreak\b|\bcontinue\b|\bpass\b|\bfor\b|\bwhile\b|\bif\b|\belif\b|\belse\b|\bprint\b|\blen\b|\bdict\b|\bTrue\b|\bFalse\b|\bNone\b)"
+        return r"(?:\bdef\b|\breturn\b|\bbreak\b|\bcontinue\b|\bpass\b|\bfor\b|\bwhile\b|\bif\b|\belif\b|\belse\b|\bprint\b|\brange\b|\blen\b|\bin\b|\bdict\b|\bTrue\b|\bFalse\b|\bNone\b)"
 
     def token(self, match: str, line: int, pos: int):
         return TokenKeyword(line, pos, match)
@@ -190,9 +190,11 @@ class LexicalAnalyzer:
                         endpos = res.regs[0][1]
                     else:
                         endpos = 0
+
+                    pos += 4 * endpos  # standard python tab size
+
                     for i in range(abs(endpos - indent_level)):
                         tokens.append(TokenIndent(endpos > indent_level, line, pos))
-                        pos += 1
                     indent_level = endpos
                     code = code[endpos:]
 
