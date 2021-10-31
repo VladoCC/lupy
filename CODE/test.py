@@ -202,6 +202,7 @@ def baz(a, b):
 
 foo()
 baz(a, a)
+
 """
 		tokens = analyzer.parse(code_text)
 		parser = EarleyParser(tokens)
@@ -233,7 +234,21 @@ foo(a)
 		parser.parse()
 		semantic_analyzer = SemanticAnalyzer(parser.get())
 		self.assertRaises(SemanticError, semantic_analyzer.check_tree)
+	
+	def test_global_var_before_calling_predefined_func(self):
+		code_text = r"""
+def foo():
+	print(a)
 
+a = "test"
+foo()
+
+"""
+		tokens = analyzer.parse(code_text)
+		parser = EarleyParser(tokens)
+		parser.parse()
+		semantic_analyzer = SemanticAnalyzer(parser.get())
+		semantic_analyzer.check_tree()
 
 if __name__ == '__main__':
 	unittest.main()
