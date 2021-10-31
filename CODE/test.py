@@ -250,5 +250,18 @@ foo()
 		semantic_analyzer = SemanticAnalyzer(parser.get())
 		semantic_analyzer.check_tree()
 
+	def test_new_parameter_in_for_cycle(self):
+		code_text = r"""
+for i in {1, 2, 3}:
+	print(i)
+	
+"""
+		tokens = analyzer.parse(code_text)
+		parser = EarleyParser(tokens)
+		parser.parse()
+		semantic_analyzer = SemanticAnalyzer(parser.get())
+		semantic_analyzer.check_tree()
+
+
 if __name__ == '__main__':
 	unittest.main()
