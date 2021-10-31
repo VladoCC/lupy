@@ -78,7 +78,6 @@ def generate(tokens):
 				line = last.line
 				pos = last.pos + len(last.content)
 		elif token.type() == Type.Keyword:
-			# for "
 			whitelist = ["return", "break", "continue", "print"]
 			constitutions = {"True": "true", "False": "false", "Node": "nil"}
 			if token.content in whitelist:
@@ -117,11 +116,15 @@ def generate(tokens):
 				for_tokens = []
 				while tokens[1].content != ":":
 					for_tokens.append(tokens.pop(1))
+				
+				last = for_tokens[len(for_tokens) - 1]
+				
 				if for_tokens[0].content == "range":
 					lua_code += "= "
 					for_tokens.pop(0)
 					for_tokens.pop(0)
 					last = for_tokens.pop(len(for_tokens) - 1)
+					for_tokens = as_proxy_list(for_tokens)
 					first_end = -1
 					depth = 0
 					for i in range(len(for_tokens)):
@@ -136,23 +139,13 @@ def generate(tokens):
 
 					if first_end == -1:
 						lua_code += "0, "
-
-					last = None
-					for token in for_tokens:
-						proxy_pos = 0
-						proxy_line = 0
-						if last is not None:
-							proxy_line = token.line - last.line
-							proxy_pos = token.pos - last.pos - len(last.content)
-						lua_code += generate([ProxyToken(token, proxy_line, proxy_pos)])
-						last = token
+					
+					lua_code += generate(for_tokens)
 					lua_code += " - 1"
 				else:
 					lua_code += token.content
 					lua_code += " pairs("
-					last = for_tokens[len(for_tokens) - 1]
-					for token in for_tokens:
-						lua_code += generate([ProxyToken(token)])
+					lua_code += generate(as_proxy_list(for_tokens))
 					lua_code += ")"
 				line = last.line
 				pos = last.pos + len(last.content)
@@ -219,6 +212,16 @@ def generate_table(dict_tokens: List[Token]):
 		dict_tokens.pop(0)
 	code += "}"
 	return code
+
+
+def as_proxy_list(tokens):
+	proxy_tokens = []
+	first = tokens[0]
+	for token in tokens:
+		proxy_line = token.line - first.line
+		proxy_pos = token.pos - first.pos
+		proxy_tokens.append(ProxyToken(token, proxy_line, proxy_pos))
+	return proxy_tokens
 
 
 class ProxyToken(Token):
