@@ -158,7 +158,6 @@ class LexicalAnalyzer:
 
     def parse(self, code):
         code_copy = code
-        print("Code: \n", code)
         tokens = []
         pos = 0
         line = 0
