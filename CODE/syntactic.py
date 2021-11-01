@@ -257,14 +257,18 @@ class EarleyParser(object):
 			children = []
 			for s in state.rule.rhs:
 				pointer = None
-				for p in state.back_pointers:
+				index = -1
+				for i in range(len(state.back_pointers)):
+					p = state.back_pointers[i]
 					if p.rule.lhs == s:
 						pointer = p
+						index = i
 						break
 				if pointer is None:
 					token = TreeToken(self.tokens.pop(0))
 					children.append(token if not s.startswith("<") else Tree(s, [token]))
 				else:
+					state.back_pointers.pop(index)
 					children.append(get_helper(pointer))
 			return Tree(state.rule.lhs, children)
 
