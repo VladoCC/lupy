@@ -1,4 +1,3 @@
-from collections import defaultdict
 from nltk.tree import Tree, ParentedTree
 from lexical import Token
 
@@ -14,6 +13,7 @@ class SemanticAnalyzer(object):
         self.tree = ParentedTree.convert(tree)
         self.known_identifiers = {'<program>': set()}
         self.known_function_parameters = {}
+        self.identifiers_to_catch_in_function = {}
 
     def get_identifiers_with_their_scope(self):
         return self.known_identifiers
@@ -21,9 +21,12 @@ class SemanticAnalyzer(object):
     def get_functions_with_their_parameters(self):
         return self.known_function_parameters
 
+    def get_identifiers_to_catch_in_function(self):
+        return self.identifiers_to_catch_in_function
+
     def check_tree(self):
         if not self.tree:
-            raise SemanticError(None, 'Tree are not set.')
+            raise SemanticError(Token(0, 0), 'Tree isn\'t set.')
         self._check_identifiers()
 
     def _get_current_context(self, node: ParentedTree) -> str:
@@ -54,16 +57,28 @@ class SemanticAnalyzer(object):
                                     str(func.leaves()[0].token)
                                 ))
 
+    def _check_function_call_catch_identifiers(self, identifier_token: Token, func_name: str) -> None:
+        current_function_identifiers_to_catch = self.identifiers_to_catch_in_function.get(func_name).copy()
+        current_function_identifiers_to_catch -= self.known_identifiers.get(func_name)
+        current_function_identifiers_to_catch -= self.known_identifiers.get('<program>')
+        if current_function_identifiers_to_catch:
+            raise SemanticError(identifier_token,
+                                "When the function was called, the variable used in it was not declared:\n{}".format(
+                                    str(identifier_token)
+                                ))
+
     def _check_identifiers(self) -> None:
         for node in self.tree.subtrees():
             if not node.parent():
                 continue
             elif node.label() == '<Identifier>':
                 current_node_parent_label = node.parent().label()
-                if current_node_parent_label == '<assignment>':
+                if current_node_parent_label == '<assignment>' or current_node_parent_label == '<for_loop>':
                     self.known_identifiers.setdefault(self._get_current_context(node), set()).add(
                         str(node.leaves()[0]))
                 elif current_node_parent_label == '<function>':
+                    if str(node.leaves()[0]) in self.known_identifiers:
+                        self.identifiers_to_catch_in_function[str(node.leaves()[0])] = set()
                     self.known_identifiers[str(node.leaves()[0])] = set()
                     self._store_function_parameters(node)
                 elif current_node_parent_label == '<Identifiers>':
@@ -75,8 +90,15 @@ class SemanticAnalyzer(object):
                             'The function identifier was used before it was announced:\n{}'.format(
                                 str(node.leaves()[0].token)
                             ))
+                    if self._get_current_context(node) == '<program>':
+                        self._check_function_call_catch_identifiers(node.leaves()[0].token, str(node.leaves()[0]))
                     self._check_function_parameters(node.parent())
                 else:
+                    current_context = self._get_current_context(node)
+                    if current_context != '<program>':
+                        self.identifiers_to_catch_in_function.setdefault(current_context, set())
+                        self.identifiers_to_catch_in_function[current_context].add(str(node.leaves()[0]))
+                        continue
                     current_context = self.known_identifiers.get(self._get_current_context(node))
                     if ((not current_context or
                          str(node.leaves()[0]) not in current_context) and

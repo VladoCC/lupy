@@ -32,7 +32,6 @@ def translate(code):
 	except SemanticError as semantic_error:
 		print(semantic_error)
 
-
 	return generate(tokens)
 
 
