@@ -302,6 +302,25 @@ foo()
 			self.assertEqual(error.token.line, 8)
 			self.assertEqual(error.token.pos, 0)
 
+	def test_func_call_with_func_pointers(self):
+		code_text = r"""
+def foo(a, b):
+	bar()
+
+
+def bar():
+	pass
+
+
+foo(bar, bar)
+
+"""
+		tokens = analyzer.parse(code_text)
+		parser = EarleyParser(tokens)
+		parser.parse()
+		semantic_analyzer = SemanticAnalyzer(parser.get())
+		semantic_analyzer.check_tree()
+
 
 if __name__ == '__main__':
 	unittest.main()
