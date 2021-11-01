@@ -14,6 +14,7 @@ class SemanticAnalyzer(object):
         self.known_identifiers = {'<program>': set()}
         self.known_function_parameters = {}
         self.identifiers_to_catch_in_function = {}
+        self.function_identifiers_to_catch_in_function = {}
 
     def get_identifiers_with_their_scope(self):
         return self.known_identifiers
@@ -58,14 +59,32 @@ class SemanticAnalyzer(object):
                                 ))
 
     def _check_function_call_catch_identifiers(self, identifier_token: Token, func_name: str) -> None:
-        current_function_identifiers_to_catch = self.identifiers_to_catch_in_function.get(func_name).copy()
-        current_function_identifiers_to_catch -= self.known_identifiers.get(func_name)
-        current_function_identifiers_to_catch -= self.known_identifiers.get('<program>')
-        if current_function_identifiers_to_catch:
+        current_variable_identifiers_to_catch = self.identifiers_to_catch_in_function.get(func_name)
+        if current_variable_identifiers_to_catch:
+            current_variable_identifiers_to_catch = self.identifiers_to_catch_in_function.get(func_name).copy()
+        else:
+            return None
+        current_variable_identifiers_to_catch -= self.known_identifiers.get(func_name)
+        current_variable_identifiers_to_catch -= self.known_identifiers.get('<program>')
+        if current_variable_identifiers_to_catch:
             raise SemanticError(identifier_token,
                                 "When the function was called, the variable used in it was not declared:\n{}".format(
                                     str(identifier_token)
                                 ))
+
+    def _check_function_call_catch_func_identifiers(self, identifier_token: Token, func_name: str) -> None:
+        current_function_identifiers_to_catch = self.function_identifiers_to_catch_in_function.get(func_name)
+        if current_function_identifiers_to_catch:
+            current_function_identifiers_to_catch = self.function_identifiers_to_catch_in_function.get(func_name).copy()
+        else:
+            return None
+        for func_name in current_function_identifiers_to_catch:
+            if func_name not in self.known_identifiers:
+                raise SemanticError(identifier_token,
+                                    "When the function was called, the function name used in it was not declared:\n{}".format(
+                                        str(identifier_token)
+                                    )
+                                    )
 
     def _check_identifiers(self) -> None:
         for node in self.tree.subtrees():
@@ -84,6 +103,13 @@ class SemanticAnalyzer(object):
                 elif current_node_parent_label == '<Identifiers>':
                     self.known_identifiers[self._get_current_context(node)].add(str(node.leaves()[0]))
                 elif current_node_parent_label == '<function_call>':
+                    if self._get_current_context(node) != '<program>':
+                        self.function_identifiers_to_catch_in_function.setdefault(self._get_current_context(node),
+                                                                                  set())
+                        self.function_identifiers_to_catch_in_function[
+                            self._get_current_context(node)
+                        ].add(str(node.leaves()[0]))
+                        continue
                     if str(node.leaves()[0]) not in self.known_identifiers:
                         raise SemanticError(
                             node.leaves()[0].token,
@@ -92,6 +118,7 @@ class SemanticAnalyzer(object):
                             ))
                     if self._get_current_context(node) == '<program>':
                         self._check_function_call_catch_identifiers(node.leaves()[0].token, str(node.leaves()[0]))
+                        self._check_function_call_catch_func_identifiers(node.leaves()[0].token, str(node.leaves()[0]))
                     self._check_function_parameters(node.parent())
                 else:
                     current_context = self._get_current_context(node)
