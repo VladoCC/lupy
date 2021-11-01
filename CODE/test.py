@@ -262,7 +262,7 @@ for i in {1, 2, 3}:
 		semantic_analyzer = SemanticAnalyzer(parser.get())
 		semantic_analyzer.check_tree()
 
-	def test_func_redefenition(self):
+	def test_func_redefinition(self):
 		code_text = r"""
 def foo():
 	print(a)
@@ -280,6 +280,27 @@ foo()
 		parser.parse()
 		semantic_analyzer = SemanticAnalyzer(parser.get())
 		self.assertRaises(SemanticError, semantic_analyzer.check_tree)
+
+	def test_func_call_before_definition(self):
+		code_text = r"""
+def foo():
+	bar()
+	
+def bar():
+	pass
+
+foo()
+
+"""
+		tokens = analyzer.parse(code_text)
+		parser = EarleyParser(tokens)
+		parser.parse()
+		semantic_analyzer = SemanticAnalyzer(parser.get())
+		try:
+			semantic_analyzer.check_tree()
+		except SemanticError as error:
+			self.assertEqual(error.token.line, 8)
+			self.assertEqual(error.token.pos, 0)
 
 
 if __name__ == '__main__':
