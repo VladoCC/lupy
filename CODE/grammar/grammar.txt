@@ -6,7 +6,7 @@ S -> <program>
 <boolean> -> True | False
 <logical_operation> -> not | and | or
 <boolean_expressions> -> <boolean> | <Identifier> | <boolean_expressions> <logical_operation> <boolean_expressions> | <comparison_expressions>
-<comparison_expressions> -> <mathematical_expressions> <comparison_operations <mathematical_expressions> | <String_expressions> <equivalence_operations> <String_expressions>
+<comparison_expressions> -> <mathematical_expressions> <comparison_operations> <mathematical_expressions> | <String_expressions> <equivalence_operations> <String_expressions>
 <mathematical_expressions> -> <first_priority>
 <first_priority> -> <second_priority> + <first_priority> | <second_priority> - <first_priority> | <second_priority>
 <second_priority> -> <third_priority> * <second_priority> | <third_priority> / <second_priority> | <third_priority> % <second_priority> | <third_priority>
@@ -19,7 +19,7 @@ S -> <program>
 <function_call> -> <Identifier> ( <arguments> ) | <Identifier> ( )
 <output> -> print ( <concatenated_expressions> )
 <assignment> -> <Identifier> = <concatenated_expressions>
-<comparison_operations -> < | <= | > | >= | <equivalence_operations>
+<comparison_operations> -> < | <= | > | >= | <equivalence_operations>
 <equivalence_operations> -> != | ==
 <simple_sentence> -> <sentence_body> newline | newline
 <complex_sentence> -> <condition> | <cycle>
