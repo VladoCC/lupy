@@ -28,9 +28,9 @@ class SemanticAnalyzer(object):
     def check_tree(self):
         if not self.tree:
             raise SemanticError(Token(0, 0), 'Tree isn\'t set.')
-        self._check_identifiers()
+        self.__check_identifiers()
 
-    def _get_current_context(self, node: ParentedTree) -> str:
+    def __get_current_context(self, node: ParentedTree) -> str:
         while node.parent() and node.parent().label() != '<function>':
             node = node.parent()
         if node.parent() and node.parent().label() == '<function>':
@@ -38,13 +38,13 @@ class SemanticAnalyzer(object):
             return current_context
         return '<program>'
 
-    def _store_function_parameters(self, func: ParentedTree) -> None:
-        self.known_function_parameters.setdefault(self._get_current_context(func), 0)
+    def __store_function_parameters(self, func: ParentedTree) -> None:
+        self.known_function_parameters.setdefault(self.__get_current_context(func), 0)
         for node in func.parent().subtrees():
             if node.parent().label() == '<Identifiers>' and node.label() == '<Identifier>':
-                self.known_function_parameters[self._get_current_context(node)] += 1
+                self.known_function_parameters[self.__get_current_context(node)] += 1
 
-    def _check_function_parameters(self, func: ParentedTree) -> None:
+    def __check_function_parameters(self, func: ParentedTree) -> None:
         current_context = str(func.leaves()[0])
         known_function_parameters = 0
         for node in func.subtrees():
@@ -58,7 +58,7 @@ class SemanticAnalyzer(object):
                                     str(func.leaves()[0].token)
                                 ))
 
-    def _check_function_call_catch_identifiers(self, identifier_token: Token, func_name: str) -> None:
+    def __check_function_call_catch_identifiers(self, identifier_token: Token, func_name: str) -> None:
         current_variable_identifiers_to_catch = self.identifiers_to_catch_in_function.get(func_name)
         if current_variable_identifiers_to_catch:
             current_variable_identifiers_to_catch = self.identifiers_to_catch_in_function.get(func_name).copy()
@@ -72,7 +72,7 @@ class SemanticAnalyzer(object):
                                     str(identifier_token)
                                 ))
 
-    def _check_function_call_catch_func_identifiers(self, identifier_token: Token, func_name: str) -> None:
+    def __check_function_call_catch_func_identifiers(self, identifier_token: Token, func_name: str) -> None:
         current_function_identifiers_to_catch = self.function_identifiers_to_catch_in_function.get(func_name)
         if current_function_identifiers_to_catch:
             current_function_identifiers_to_catch = self.function_identifiers_to_catch_in_function.get(func_name).copy()
@@ -86,48 +86,50 @@ class SemanticAnalyzer(object):
                                     )
                                     )
 
-    def _check_identifiers(self) -> None:
+    def __check_identifiers(self) -> None:
         for node in self.tree.subtrees():
             if not node.parent():
                 continue
             elif node.label() == '<Identifier>':
                 current_node_parent_label = node.parent().label()
                 if current_node_parent_label == '<assignment>' or current_node_parent_label == '<for_loop>':
-                    self.known_identifiers.setdefault(self._get_current_context(node), set()).add(
+                    self.known_identifiers.setdefault(self.__get_current_context(node), set()).add(
                         str(node.leaves()[0]))
                 elif current_node_parent_label == '<function>':
                     if str(node.leaves()[0]) in self.known_identifiers:
                         self.identifiers_to_catch_in_function[str(node.leaves()[0])] = {str(node.leaves()[0])}
                     self.known_identifiers[str(node.leaves()[0])] = {str(node.leaves()[0])}
                     self.known_identifiers['<program>'].add(str(node.leaves()[0]))
-                    self._store_function_parameters(node)
+                    self.__store_function_parameters(node)
                 elif current_node_parent_label == '<Identifiers>':
-                    self.known_identifiers[self._get_current_context(node)].add(str(node.leaves()[0]))
+                    self.known_identifiers[self.__get_current_context(node)].add(str(node.leaves()[0]))
                 elif current_node_parent_label == '<function_call>':
-                    if self._get_current_context(node) != '<program>':
-                        self.function_identifiers_to_catch_in_function.setdefault(self._get_current_context(node),
+                    if self.__get_current_context(node) != '<program>':
+                        self.function_identifiers_to_catch_in_function.setdefault(self.__get_current_context(node),
                                                                                   set())
                         self.function_identifiers_to_catch_in_function[
-                            self._get_current_context(node)
+                            self.__get_current_context(node)
                         ].add(str(node.leaves()[0]))
                         continue
                     if str(node.leaves()[0]) not in self.known_identifiers:
+                        if str(node.leaves()[0]) in self.known_identifiers.get(self.__get_current_context(node)):
+                            continue
                         raise SemanticError(
                             node.leaves()[0].token,
                             'The function identifier was used before it was announced:\n{}'.format(
                                 str(node.leaves()[0].token)
                             ))
-                    if self._get_current_context(node) == '<program>':
-                        self._check_function_call_catch_identifiers(node.leaves()[0].token, str(node.leaves()[0]))
-                        self._check_function_call_catch_func_identifiers(node.leaves()[0].token, str(node.leaves()[0]))
-                    self._check_function_parameters(node.parent())
+                    if self.__get_current_context(node) == '<program>':
+                        self.__check_function_call_catch_identifiers(node.leaves()[0].token, str(node.leaves()[0]))
+                        self.__check_function_call_catch_func_identifiers(node.leaves()[0].token, str(node.leaves()[0]))
+                    self.__check_function_parameters(node.parent())
                 else:
-                    current_context = self._get_current_context(node)
+                    current_context = self.__get_current_context(node)
                     if current_context != '<program>':
                         self.identifiers_to_catch_in_function.setdefault(current_context, set())
                         self.identifiers_to_catch_in_function[current_context].add(str(node.leaves()[0]))
                         continue
-                    current_context = self.known_identifiers.get(self._get_current_context(node))
+                    current_context = self.known_identifiers.get(self.__get_current_context(node))
                     if ((not current_context or
                          str(node.leaves()[0]) not in current_context) and
                             str(node.leaves()[0]) not in self.known_identifiers['<program>']):
