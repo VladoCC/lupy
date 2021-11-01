@@ -20,6 +20,7 @@ def generate(tokens):
 
 	indent_state = None
 	indent_level = 0
+	oneliner = False
 
 	while len(tokens) > 0:
 		token = tokens[0]
@@ -55,6 +56,9 @@ def generate(tokens):
 					lua_code += " then"
 				elif indent_state == Construction.Loop:
 					lua_code += " do"
+				
+				if tokens[1].content != "newline":
+					oneliner = True
 
 				if indent_state is not None:
 					pos += 1
@@ -77,6 +81,9 @@ def generate(tokens):
 				lua_code += generate_table(dict_tokens)
 				line = last.line
 				pos = last.pos + len(last.content)
+			elif token.content == "newline" and oneliner:
+				oneliner = False
+				lua_code += " end"
 		elif token.type() == Type.Keyword:
 			whitelist = ["return", "break", "continue", "print"]
 			constitutions = {"True": "true", "False": "false", "Node": "nil"}
