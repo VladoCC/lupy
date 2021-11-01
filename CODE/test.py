@@ -234,7 +234,7 @@ foo(a)
 		parser.parse()
 		semantic_analyzer = SemanticAnalyzer(parser.get())
 		self.assertRaises(SemanticError, semantic_analyzer.check_tree)
-	
+
 	def test_global_var_before_calling_predefined_func(self):
 		code_text = r"""
 def foo():
@@ -261,6 +261,25 @@ for i in {1, 2, 3}:
 		parser.parse()
 		semantic_analyzer = SemanticAnalyzer(parser.get())
 		semantic_analyzer.check_tree()
+
+	def test_func_redefenition(self):
+		code_text = r"""
+def foo():
+	print(a)
+
+a = "test"
+foo()
+
+def foo():
+	print(b)
+foo()
+
+"""
+		tokens = analyzer.parse(code_text)
+		parser = EarleyParser(tokens)
+		parser.parse()
+		semantic_analyzer = SemanticAnalyzer(parser.get())
+		self.assertRaises(SemanticError, semantic_analyzer.check_tree)
 
 
 if __name__ == '__main__':
