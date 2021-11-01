@@ -321,6 +321,26 @@ foo(bar, bar)
 		semantic_analyzer = SemanticAnalyzer(parser.get())
 		semantic_analyzer.check_tree()
 
+	def test_func_call_with_variable(self):
+		code_text = r"""
+def foo():
+	bar()
+
+
+def bar():
+	pass
+
+
+a = foo
+a()
+
+"""
+		tokens = analyzer.parse(code_text)
+		parser = EarleyParser(tokens)
+		parser.parse()
+		semantic_analyzer = SemanticAnalyzer(parser.get())
+		semantic_analyzer.check_tree()
+
 
 if __name__ == '__main__':
 	unittest.main()
