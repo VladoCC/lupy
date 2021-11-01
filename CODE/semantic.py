@@ -97,8 +97,9 @@ class SemanticAnalyzer(object):
                         str(node.leaves()[0]))
                 elif current_node_parent_label == '<function>':
                     if str(node.leaves()[0]) in self.known_identifiers:
-                        self.identifiers_to_catch_in_function[str(node.leaves()[0])] = set()
-                    self.known_identifiers[str(node.leaves()[0])] = set()
+                        self.identifiers_to_catch_in_function[str(node.leaves()[0])] = {str(node.leaves()[0])}
+                    self.known_identifiers[str(node.leaves()[0])] = {str(node.leaves()[0])}
+                    self.known_identifiers['<program>'].add(str(node.leaves()[0]))
                     self._store_function_parameters(node)
                 elif current_node_parent_label == '<Identifiers>':
                     self.known_identifiers[self._get_current_context(node)].add(str(node.leaves()[0]))
