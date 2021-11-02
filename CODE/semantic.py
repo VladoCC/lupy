@@ -9,6 +9,12 @@ class SemanticError(AnalyzerError):
         self.token = token
 
 
+def deep_copy_token(token: Token) -> Token:
+    new_token = Token(token.line, token.pos, token.content)
+    new_token.token_type = token.token_type
+    return new_token
+
+
 class SemanticAnalyzer(object):
     def __init__(self, tree: Tree):
         self.tree = ParentedTree.convert(tree)
@@ -54,9 +60,12 @@ class SemanticAnalyzer(object):
         current_known_parameters = self.known_function_parameters.get(current_context)
         if (current_known_parameters is None or
                 current_known_parameters != known_function_parameters):
-            raise SemanticError(func.leaves()[0].token,
+            token = deep_copy_token(func.leaves()[0].token)
+            token.line += 1
+            token.pos += 1
+            raise SemanticError(token,
                                 'Semantic Error\nParameters in the declaration and function call do not match:\n{}'.format(
-                                    str(func.leaves()[0].token)
+                                    str(token)
                                 ))
 
     def __check_function_call_catch_identifiers(self, identifier_token: Token, func_name: str) -> None:
@@ -68,9 +77,12 @@ class SemanticAnalyzer(object):
         current_variable_identifiers_to_catch -= self.known_identifiers.get(func_name)
         current_variable_identifiers_to_catch -= self.known_identifiers.get('<program>')
         if current_variable_identifiers_to_catch:
-            raise SemanticError(identifier_token,
+            token = deep_copy_token(identifier_token)
+            token.line += 1
+            token.pos += 1
+            raise SemanticError(token,
                                 "Semantic Error\nWhen the function was called, the variable used in it was not declared:\n{}".format(
-                                    str(identifier_token)
+                                    str(token)
                                 ))
 
     def __check_function_call_catch_func_identifiers(self, identifier_token: Token, func_name: str) -> None:
@@ -79,11 +91,15 @@ class SemanticAnalyzer(object):
             current_function_identifiers_to_catch = self.function_identifiers_to_catch_in_function.get(func_name).copy()
         else:
             return None
-        for func_name in current_function_identifiers_to_catch:
-            if func_name not in self.known_identifiers:
-                raise SemanticError(identifier_token,
+        for current_function_to_catch_name in current_function_identifiers_to_catch:
+            if (current_function_to_catch_name not in self.known_identifiers and
+                    current_function_to_catch_name not in self.known_identifiers[func_name]):
+                token = deep_copy_token(identifier_token)
+                token.line += 1
+                token.pos += 1
+                raise SemanticError(token,
                                     "Semantic Error\nWhen the function was called, the function name used in it was not declared:\n{}".format(
-                                        str(identifier_token)
+                                        str(token)
                                     )
                                     )
 
@@ -115,10 +131,13 @@ class SemanticAnalyzer(object):
                     if str(node.leaves()[0]) not in self.known_identifiers:
                         if str(node.leaves()[0]) in self.known_identifiers.get(self.__get_current_context(node)):
                             continue
+                        token = deep_copy_token(node.leaves()[0].token)
+                        token.line += 1
+                        token.pos += 1
                         raise SemanticError(
-                            node.leaves()[0].token,
+                            token,
                             'Semantic Error\nThe function identifier was used before it was announced:\n{}'.format(
-                                str(node.leaves()[0].token)
+                                str(token)
                             ))
                     if self.__get_current_context(node) == '<program>':
                         self.__check_function_call_catch_identifiers(node.leaves()[0].token, str(node.leaves()[0]))
@@ -134,9 +153,12 @@ class SemanticAnalyzer(object):
                     if ((not current_context or
                          str(node.leaves()[0]) not in current_context) and
                             str(node.leaves()[0]) not in self.known_identifiers['<program>']):
+                        token = deep_copy_token(node.leaves()[0].token)
+                        token.line += 1
+                        token.pos += 1
                         raise SemanticError(
-                            node.leaves()[0].token,
+                            token,
                             'Semantic Error\nThe identifier was encountered before it was announced:\n{}'.format(
-                                str(node.leaves()[0].token)
+                                str(token)
                             )
                         )
