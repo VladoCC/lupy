@@ -327,5 +327,21 @@ a()
 		semantic_analyzer.check_tree()
 
 
+	def test_call_param_as_func(self):
+		code_text = r"""
+def foo(a, b):
+	b(1)
+
+def bar(a):
+	print(1)
+
+foo(1, bar)
+"""
+		tokens = analyzer.parse(code_text)
+		parser = EarleyParser(tokens)
+		semantic_analyzer = SemanticAnalyzer(parser.parse())
+		semantic_analyzer.check_tree()
+
+
 if __name__ == '__main__':
 	unittest.main()
