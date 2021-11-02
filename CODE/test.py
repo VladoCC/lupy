@@ -1,3 +1,4 @@
+from exceptions import SyntacticError
 from main import analyzer, EarleyParser
 from lexical import Type, TokenIdentifier, TokenKeyword, TokenOperator, TokenNumber, TokenDivider, TokenString, \
 	TokenIndent, LexicalError
@@ -74,7 +75,7 @@ print(a) # here comes some comment"""
 		try:
 			analyzer.parse(code_text)
 		except LexicalError as e:
-			if e.message == """
+			if e.message == """Lexical Error
 Incorrect code in position 10 line 2: print(a) # here comes some comment
                                                ↑""":
 				assertion = True
@@ -89,9 +90,7 @@ print(a)
 """
 		tokens = analyzer.parse(code_text)
 		parser = EarleyParser(tokens)
-		parser.parse()
-		tree = parser.get()
-		self.assertIsNone(tree, "This code chain is correct")
+		self.assertRaises(SyntacticError, parser.parse)
 
 	def test_correct_chain(self):
 		code_text = r"""
@@ -100,8 +99,7 @@ print(a)
 """
 		tokens = analyzer.parse(code_text)
 		parser = EarleyParser(tokens)
-		parser.parse()
-		tree = parser.get()
+		tree = parser.parse()
 		self.assertIsNotNone(tree, "This code chain is not correct")
 
 	def test_empty_func(self):
@@ -114,8 +112,7 @@ def foo():
 """
 		tokens = analyzer.parse(code_text)
 		parser = EarleyParser(tokens)
-		parser.parse()
-		tree = parser.get()
+		tree = parser.parse()
 		self.assertIsNotNone(tree, "This code chain is not correct")
 
 	def test_func_with_multiple_arguments(self):
@@ -134,8 +131,7 @@ baz(a, a, a)
 """
 		tokens = analyzer.parse(code_text)
 		parser = EarleyParser(tokens)
-		parser.parse()
-		tree = parser.get()
+		tree = parser.parse()
 		self.assertIsNotNone(tree, "This code chain is not correct")
 
 
@@ -158,8 +154,7 @@ print(b)
 """
 		tokens = analyzer.parse(code_text)
 		parser = EarleyParser(tokens)
-		parser.parse()
-		semantic_analyzer = SemanticAnalyzer(parser.get())
+		semantic_analyzer = SemanticAnalyzer(parser.parse())
 		semantic_analyzer.check_tree()
 
 	def test_incorrect_identifier(self):
@@ -177,11 +172,10 @@ def baz(a, b):
 	z = 15
 
 print(z)
-		"""
+"""
 		tokens = analyzer.parse(code_text)
 		parser = EarleyParser(tokens)
-		parser.parse()
-		semantic_analyzer = SemanticAnalyzer(parser.get())
+		semantic_analyzer = SemanticAnalyzer(parser.parse())
 		self.assertRaises(SemanticError, semantic_analyzer.check_tree)
 
 	def test_correct_function_call(self):
@@ -206,8 +200,7 @@ baz(a, a)
 """
 		tokens = analyzer.parse(code_text)
 		parser = EarleyParser(tokens)
-		parser.parse()
-		semantic_analyzer = SemanticAnalyzer(parser.get())
+		semantic_analyzer = SemanticAnalyzer(parser.parse())
 		semantic_analyzer.check_tree()
 
 	def test_incorrect_function_call(self):
@@ -223,7 +216,6 @@ def foo():
 def baz(a, b):
 	print(b)
 	z = 15
-
 	print(z)
 
 foo(a)
@@ -231,8 +223,7 @@ foo(a)
 """
 		tokens = analyzer.parse(code_text)
 		parser = EarleyParser(tokens)
-		parser.parse()
-		semantic_analyzer = SemanticAnalyzer(parser.get())
+		semantic_analyzer = SemanticAnalyzer(parser.parse())
 		self.assertRaises(SemanticError, semantic_analyzer.check_tree)
 
 	def test_global_var_before_calling_predefined_func(self):
@@ -246,8 +237,7 @@ foo()
 """
 		tokens = analyzer.parse(code_text)
 		parser = EarleyParser(tokens)
-		parser.parse()
-		semantic_analyzer = SemanticAnalyzer(parser.get())
+		semantic_analyzer = SemanticAnalyzer(parser.parse())
 		semantic_analyzer.check_tree()
 
 	def test_new_parameter_in_for_cycle(self):
@@ -258,8 +248,7 @@ for i in {1, 2, 3}:
 """
 		tokens = analyzer.parse(code_text)
 		parser = EarleyParser(tokens)
-		parser.parse()
-		semantic_analyzer = SemanticAnalyzer(parser.get())
+		semantic_analyzer = SemanticAnalyzer(parser.parse())
 		semantic_analyzer.check_tree()
 
 	def test_func_redefinition(self):
@@ -277,8 +266,7 @@ foo()
 """
 		tokens = analyzer.parse(code_text)
 		parser = EarleyParser(tokens)
-		parser.parse()
-		semantic_analyzer = SemanticAnalyzer(parser.get())
+		semantic_analyzer = SemanticAnalyzer(parser.parse())
 		self.assertRaises(SemanticError, semantic_analyzer.check_tree)
 
 	def test_func_call_before_definition(self):
@@ -294,8 +282,7 @@ foo()
 """
 		tokens = analyzer.parse(code_text)
 		parser = EarleyParser(tokens)
-		parser.parse()
-		semantic_analyzer = SemanticAnalyzer(parser.get())
+		semantic_analyzer = SemanticAnalyzer(parser.parse())
 		try:
 			semantic_analyzer.check_tree()
 		except SemanticError as error:
@@ -317,8 +304,7 @@ foo(bar, bar)
 """
 		tokens = analyzer.parse(code_text)
 		parser = EarleyParser(tokens)
-		parser.parse()
-		semantic_analyzer = SemanticAnalyzer(parser.get())
+		semantic_analyzer = SemanticAnalyzer(parser.parse())
 		semantic_analyzer.check_tree()
 
 	def test_func_call_with_variable(self):
@@ -337,8 +323,7 @@ a()
 """
 		tokens = analyzer.parse(code_text)
 		parser = EarleyParser(tokens)
-		parser.parse()
-		semantic_analyzer = SemanticAnalyzer(parser.get())
+		semantic_analyzer = SemanticAnalyzer(parser.parse())
 		semantic_analyzer.check_tree()
 
 
