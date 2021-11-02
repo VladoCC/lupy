@@ -1,7 +1,7 @@
 from os import listdir
 from os.path import isfile, join
 
-from CODE import execution
+import execution
 from generator import generate
 from lexical import LexicalAnalyzer
 from syntactic import EarleyParser
