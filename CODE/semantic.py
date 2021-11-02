@@ -1,8 +1,9 @@
 from nltk.tree import Tree, ParentedTree
 from lexical import Token
+from exceptions import AnalyzerError
 
 
-class SemanticError(BaseException):
+class SemanticError(AnalyzerError):
     def __init__(self, token: Token, *args):
         super(SemanticError, self).__init__(*args)
         self.token = token
@@ -27,7 +28,7 @@ class SemanticAnalyzer(object):
 
     def check_tree(self):
         if not self.tree:
-            raise SemanticError(Token(0, 0), 'Tree isn\'t set.')
+            raise SemanticError(Token(0, 0), 'Semantic Error\nTree isn\'t set.')
         self.__check_identifiers()
 
     def __get_current_context(self, node: ParentedTree) -> str:
@@ -54,7 +55,7 @@ class SemanticAnalyzer(object):
         if (current_known_parameters is None or
                 current_known_parameters != known_function_parameters):
             raise SemanticError(func.leaves()[0].token,
-                                'Parameters in the declaration and function call do not match:\n{}'.format(
+                                'Semantic Error\nParameters in the declaration and function call do not match:\n{}'.format(
                                     str(func.leaves()[0].token)
                                 ))
 
@@ -68,7 +69,7 @@ class SemanticAnalyzer(object):
         current_variable_identifiers_to_catch -= self.known_identifiers.get('<program>')
         if current_variable_identifiers_to_catch:
             raise SemanticError(identifier_token,
-                                "When the function was called, the variable used in it was not declared:\n{}".format(
+                                "Semantic Error\nWhen the function was called, the variable used in it was not declared:\n{}".format(
                                     str(identifier_token)
                                 ))
 
@@ -81,7 +82,7 @@ class SemanticAnalyzer(object):
         for func_name in current_function_identifiers_to_catch:
             if func_name not in self.known_identifiers:
                 raise SemanticError(identifier_token,
-                                    "When the function was called, the function name used in it was not declared:\n{}".format(
+                                    "Semantic Error\nWhen the function was called, the function name used in it was not declared:\n{}".format(
                                         str(identifier_token)
                                     )
                                     )
@@ -116,7 +117,7 @@ class SemanticAnalyzer(object):
                             continue
                         raise SemanticError(
                             node.leaves()[0].token,
-                            'The function identifier was used before it was announced:\n{}'.format(
+                            'Semantic Error\nThe function identifier was used before it was announced:\n{}'.format(
                                 str(node.leaves()[0].token)
                             ))
                     if self.__get_current_context(node) == '<program>':
@@ -135,7 +136,7 @@ class SemanticAnalyzer(object):
                             str(node.leaves()[0]) not in self.known_identifiers['<program>']):
                         raise SemanticError(
                             node.leaves()[0].token,
-                            'The identifier was encountered before it was announced:\n{}'.format(
+                            'Semantic Error\nThe identifier was encountered before it was announced:\n{}'.format(
                                 str(node.leaves()[0].token)
                             )
                         )

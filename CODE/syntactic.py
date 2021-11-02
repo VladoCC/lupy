@@ -2,6 +2,8 @@ from collections import defaultdict
 from nltk.tree import Tree
 import re
 
+from exceptions import SyntacticError, NoNewLineError
+
 
 class Rule(object):
 	def __init__(self, lhs, rhs):
@@ -196,6 +198,17 @@ class TreeToken:
 
 class EarleyParser(object):
 	def __init__(self, tokens, grammar=Grammar.load_grammar("grammar/grammar.txt")):
+		success = False
+		for i in range(len(tokens)):
+			if tokens[len(tokens) - i - 1].content == "newline":
+				success = True
+				break
+			elif tokens[len(tokens) - i - 1].content == "dedent":
+				continue
+			else:
+				break
+		if not success:
+			raise NoNewLineError()
 		self.tokens = tokens.copy()
 		sentence = ""
 		for token in tokens:
@@ -243,16 +256,10 @@ class EarleyParser(object):
 						self.predictor(state, i)
 				else:
 					self.completer(state, i)
+		
+		return self._get()
 
-	def has_parse(self):
-		for state in self.chart[-1]:
-			if state.is_complete() and state.rule.lhs == 'S' and \
-				state.sent_pos == 0 and state.chart_pos == len(self.words):
-				return True
-
-		return False
-
-	def get(self):
+	def _get(self):
 		def get_helper(state):
 			children = []
 			for s in state.rule.rhs:
@@ -276,4 +283,4 @@ class EarleyParser(object):
 			if state.is_complete() and state.rule.lhs == 'S':
 				return get_helper(state)
 
-		return None
+		raise SyntacticError
