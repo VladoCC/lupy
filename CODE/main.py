@@ -1,54 +1,60 @@
 from os import listdir
 from os.path import isfile, join
 
+from CODE import execution
 from generator import generate
 from lexical import LexicalAnalyzer
 from syntactic import EarleyParser
-from semantic import SemanticAnalyzer, SemanticError
-
-from lupa import LuaRuntime
+from semantic import SemanticAnalyzer
+from exceptions import AnalyzerError
 
 analyzer = LexicalAnalyzer()
 
+
 def translate(code):
 	tokens = analyzer.parse(code)
-	token_line = ""
-	for token in tokens:
-		token_line += token.as_symbol() + " "
-	token_line = token_line[:-1]
-
-	#print(token_line)
-
-	parser = EarleyParser(tokens)
-	parser.parse()
-	tree = parser.get()
-
-	if tree is not None:
-		#tree.pretty_print()
-		pass
-	else:
-		print("can't parse code: \n", code)
-
-	semantic_analyzer = SemanticAnalyzer(tree)
-	try:
-		semantic_analyzer.check_tree()
-	except SemanticError as semantic_error:
-		print(semantic_error)
-
+	tree = EarleyParser(tokens).parse()
+	SemanticAnalyzer(tree).check_tree()
 	return generate(tokens)
 
 
-if __name__ == '__main__':
+def main():
+	print("Translation started")
+	print("Looking for .py files in input dir")
 	files = [join("input", file) for file in listdir("input") if isfile(join("input", file)) and file.endswith(".py")]
+	print("Files found: ")
 	for file in files:
+		name = file[6:]
+		print("  -", name)
+	print()
+	for file in files:
+		name = file[6:]
+		print("Processing file:", name)
 		py_code = open(file, "r").read()
-		print("Python code: \n", py_code)
-		print("Python execution output:")
-		exec (py_code)
-		lua_code = translate(py_code)
-		print("\nLua code:")
-		print(lua_code)
-		lua_runtime = LuaRuntime()
-		print("\nLua execution output:")
-		lua_runtime.execute(lua_code)
-		open("output/" + file[5:-2] + "lua", "w").write(lua_code)
+		error = None
+		try:
+			lua_code = translate(py_code)
+		except AnalyzerError as e:
+			error = e
+		
+		if error is None:
+			try:
+				py_output = execution.execute_python(py_code)
+				lua_output = execution.execute_lua(lua_code)
+			except RuntimeError as e:
+				error = e
+		
+		print("Status:", "SUCCESS" if error is None else "ERROR")
+		if error is None:
+			print("Outputs are equal:", py_output == lua_output)
+			filename = "output/" + file[6:-2] + "lua"
+			print("Lua code was saved to:", filename)
+			open(filename, "w").write(lua_code)
+		else:
+			print("Description:", error)
+			print("File skipped")
+		print()
+
+
+if __name__ == '__main__':
+	main()

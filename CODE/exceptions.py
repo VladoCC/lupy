@@ -1,0 +1,20 @@
+class AnalyzerError(Exception):
+    pass
+
+
+class LexicalError(AnalyzerError):
+    def __init__(self, pos, line, code):
+        err_line = code.split('\n')[line]
+        incorrect_line = f"Incorrect code in position {pos + 1} line {line + 1}: "
+        self.message = "Lexical Error\n" + incorrect_line + err_line + "\n" + " " * len(incorrect_line) + " " * pos + "↑"
+        super().__init__(self.message)
+
+
+class SyntacticError(AnalyzerError):
+    def __init__(self):
+        super().__init__("Syntactic Error\nUnable to parse code using Earley Parser")
+
+
+class NoNewLineError(AnalyzerError):
+    def __init__(self):
+        super().__init__("Syntactic Error\nNo new line at end of file")

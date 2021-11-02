@@ -1,6 +1,8 @@
 from enum import Enum
 import re
 
+from exceptions import LexicalError
+
 
 class Type(Enum):
     Identifier = 0
@@ -143,14 +145,6 @@ class PatternIdentifier(AbstractPattern):
 
     def token(self, match: str, line: int, pos: int):
         return TokenIdentifier(line, pos, match)
-
-
-class LexicalError(Exception):
-    def __init__(self, pos, line, code):
-        err_line = code.split('\n')[line]
-        incorrect_line = f"Incorrect code in position {pos + 1} line {line + 1}: "
-        self.message = "\n" + incorrect_line + err_line + "\n" + " " * len(incorrect_line) + " " * pos + "↑"
-        super().__init__(self.message)
 
 
 class LexicalAnalyzer:
