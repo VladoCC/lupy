@@ -2,8 +2,7 @@ from enum import Enum, auto
 
 from typing import List
 
-from lexical import Token, TokenNumber, \
-	TokenDivider, TokenString, TokenKeyword, TokenOperator, TokenIdentifier, Type
+from lexical import Token, Type
 
 
 class Construction(Enum):
@@ -232,7 +231,6 @@ def as_proxy_list(tokens):
 
 
 class ProxyToken(Token):
-
 	def __init__(self, token: Token, line: int = 0, pos: int = 0):
 		super().__init__(line, pos, token.content)
 		self.token_type = token.type()
