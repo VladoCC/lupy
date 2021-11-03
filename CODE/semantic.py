@@ -34,7 +34,7 @@ class SemanticAnalyzer(object):
 
     def check_tree(self):
         if not self.tree:
-            raise SemanticError(Token(0, 0), 'Semantic Error\nTree isn\'t set.')
+            raise SemanticError(Token(0, 0), "Semantic Error\nTree wasn\'t set")
         self.__check_identifiers()
 
     def __get_current_context(self, node: ParentedTree) -> str:
@@ -64,7 +64,7 @@ class SemanticAnalyzer(object):
             token.line += 1
             token.pos += 1
             raise SemanticError(token,
-                                'Semantic Error\nParameters in the declaration and function call do not match:\n{}'.format(
+                                "Semantic Error\nParameters in the declaration and function call do not match:\n{}".format(
                                     str(token)
                                 ))
 
@@ -136,7 +136,7 @@ class SemanticAnalyzer(object):
                         token.pos += 1
                         raise SemanticError(
                             token,
-                            'Semantic Error\nThe function identifier was used before it was announced:\n{}'.format(
+                            "Semantic Error\nThe function identifier was used before it was announced:\n{}".format(
                                 str(token)
                             ))
                     if self.__get_current_context(node) == '<program>':
@@ -158,7 +158,7 @@ class SemanticAnalyzer(object):
                         token.pos += 1
                         raise SemanticError(
                             token,
-                            'Semantic Error\nThe identifier was encountered before it was announced:\n{}'.format(
+                            "Semantic Error\nThe identifier was encountered before it was announced:\n{}".format(
                                 str(token)
                             )
                         )
