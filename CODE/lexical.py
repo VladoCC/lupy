@@ -1,7 +1,7 @@
 from enum import Enum
 import re
 
-from exceptions import LexicalError
+from exceptions import LexicalError, IndentError
 
 
 class Type(Enum):
@@ -177,6 +177,10 @@ class LexicalAnalyzer:
                     tokens.append(TokenDivider(line, pos, 'newline'))
                     pos = 0
                     line += 1
+
+                    res = re.search("^ +", code)
+                    if res is not None:
+                        raise IndentError(line + 1)
 
                     res = re.search("^\t+", code)
                     if res is not None:
