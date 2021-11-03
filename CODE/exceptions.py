@@ -10,6 +10,11 @@ class LexicalError(AnalyzerError):
         super().__init__(self.message)
 
 
+class IndentError(AnalyzerError):
+    def __init__(self, line):
+        super().__init__(f"Lexical Error\nUnexpected spaces at the start of the line {line}")
+
+
 class SyntacticError(AnalyzerError):
     def __init__(self):
         super().__init__("Syntactic Error\nUnable to parse code using Earley Parser")
