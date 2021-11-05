@@ -5,23 +5,25 @@ from lupa import LuaRuntime
 
 
 def execute_python(code, globals = globals(), locals = locals()):
+	out = sys.stdout
+	io = StringIO()
+	error = None
 	try:
-		out = sys.stdout
-		io = StringIO()
 		sys.stdout = io
 		exec(code, globals, locals)
-		sys.stdout = out
+		
+	except BaseException as e:
+		error = e
+	sys.stdout = out
+	if error is None:
 		return io.getvalue()
-	except:
-		raise RuntimeError("Unable to execute python code")
+	else:
+		raise error
 
 
 def execute_lua(code):
-	try:
-		lua_runtime = LuaRuntime()
-		custom_output = """output = ""
-		function print(text) output = output .. text .. "\\n" end\n"""
-		lua_runtime.execute(custom_output + code)
-		return lua_runtime.eval("output")
-	except:
-		raise RuntimeError("Unable to execute lua code")
+	lua_runtime = LuaRuntime()
+	custom_output = """output = ""
+	function print(text) output = output .. text .. "\\n" end\n"""
+	lua_runtime.execute(custom_output + code)
+	return lua_runtime.eval("output")
