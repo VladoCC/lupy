@@ -27,8 +27,9 @@ S -> <program>
 <sentence_body> -> <concatenated_expressions> | <output> | <assignment> | pass | return <concatenated_expressions> | len ( <function_call> )
 <sentences> -> <sentence> <sentences> | <sentence>
 <block> -> <simple_sentence> | newline indent <sentences> dedent
-<condition> -> if <boolean_expressions> : <block> <otherwise> | if <boolean_expressions> : <block>
-<otherwise> -> elif <condition> | else : <block>
+<condition> -> if <conditional>
+<conditional> -> <boolean_expressions> : <block> <otherwise> | <boolean_expressions> : <block>
+<otherwise> -> elif <conditional> | else : <block>
 <expressions> -> <concatenated_expressions> , <expressions> | <concatenated_expressions>
 <arguments> -> <expressions>
 <named_expression> -> <assignment> , <named_expression> | <assignment>

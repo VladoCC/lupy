@@ -106,7 +106,7 @@ def generate(tokens):
 				pos += len(token.content)
 				if token.content == "elif":
 					lua_code += "else"
-				lua_code += "if"
+				lua_code += "if "
 				indent_state = Construction.Condition
 				indent_level = token.pos
 			elif token.content == "else":
