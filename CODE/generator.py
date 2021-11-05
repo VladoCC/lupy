@@ -64,7 +64,8 @@ def generate(tokens):
 					pos += 1
 
 			elif token.content == "dedent":
-				if indent_state != Construction.Condition:
+				condition = indent_state != Construction.Condition or len(tokens) < 2 or (tokens[1].content != "else" and tokens[1].content != "elif")
+				if condition:
 					while indent_level > pos:
 						pos += 1
 						lua_code += " "
