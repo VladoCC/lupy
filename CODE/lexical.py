@@ -117,7 +117,7 @@ class PatternDivider(AbstractPattern):
 
 class PatternOperator(AbstractPattern):
     def regex(self):
-        return r"(?:\+|\-|\*{1,2}|\/|\%|={1,2}|!=|<|>|<=|>=|\bnot\b|\band\b|\bor\b|\bin\b)"
+        return r"(?:\+|\-|\*{1,2}|\/|\%|={1,2}|!=|<=|>=|<|>|\bnot\b|\band\b|\bor\b|\bin\b)"
 
     def token(self, match: str, line: int, pos: int):
         return TokenOperator(line, pos, match)
