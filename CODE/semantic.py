@@ -46,6 +46,8 @@ class SemanticAnalyzer(object):
         return '<program>'
 
     def __store_function_parameters(self, func: ParentedTree) -> None:
+        if self.__get_current_context(func) in self.known_function_parameters:
+            self.known_function_parameters[self.__get_current_context(func)] = 0
         self.known_function_parameters.setdefault(self.__get_current_context(func), 0)
         for node in func.parent().subtrees():
             if node.parent().label() == '<Identifiers>' and node.label() == '<Identifier>':
