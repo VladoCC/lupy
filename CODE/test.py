@@ -269,6 +269,21 @@ foo()
 		semantic_analyzer = SemanticAnalyzer(parser.parse())
 		self.assertRaises(SemanticError, semantic_analyzer.check_tree)
 
+	def test_func_redefinition_with_parameters(self):
+		code_text = r"""
+def func(par1, par2):
+	return par1 + par2
+
+def func(par1, par2):
+	return par1 + par2
+
+func = func(2, 2)
+
+"""
+		tokens = analyzer.parse(code_text)
+		parser = EarleyParser(tokens)
+		semantic_analyzer = SemanticAnalyzer(parser.parse())
+
 	def test_func_call_before_definition(self):
 		code_text = r"""
 def foo():
