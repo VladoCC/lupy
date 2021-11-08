@@ -4,8 +4,8 @@ S -> <program>
 <program> -> <sentence> | <function> | <sentence> <program> | <function> <program>
 <Identifiers> -> <Identifier> | <Identifier> , <Identifiers>
 <boolean> -> True | False
-<logical_operation> -> not | and | or | <equivalence_operations>
-<boolean_expressions> -> <boolean> | <Identifier> | <boolean_expressions> <logical_operation> <boolean_expressions> | <comparison_expressions>
+<logical_operation> -> and | or | <equivalence_operations>
+<boolean_expressions> -> <boolean> | not <boolean_expressions> | <Identifier> | <boolean_expressions> <logical_operation> <boolean_expressions> | <comparison_expressions>
 <comparison_expressions> -> <mathematical_expressions> <comparison_operations> <mathematical_expressions> | <String_expressions> <equivalence_operations> <String_expressions>
 <mathematical_expressions> -> <first_priority>
 <first_priority> -> <second_priority> + <first_priority> | <second_priority> - <first_priority> | <second_priority>
