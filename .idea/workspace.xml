@@ -3,13 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="cd6357a0-47af-4c78-932a-fb9d3385132f" name="Default Changelist" comment="Working syntactic parser">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CODE/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CODE/generator.py" beforeDir="false" afterPath="$PROJECT_DIR$/CODE/generator.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CODE/grammar/example.txt" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/CODE/input/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/CODE/input/test.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CODE/output/test.lua" beforeDir="false" afterPath="$PROJECT_DIR$/CODE/output/test.lua" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CODE/semantic.py" beforeDir="false" afterPath="$PROJECT_DIR$/CODE/semantic.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CODE/lexical.py" beforeDir="false" afterPath="$PROJECT_DIR$/CODE/lexical.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -154,7 +149,7 @@
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/CODE/syntactic.py</url>
           <line>211</line>
-          <option name="timeStamp" value="37" />
+          <option name="timeStamp" value="41" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

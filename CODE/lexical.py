@@ -148,7 +148,7 @@ class PatternIdentifier(AbstractPattern):
 
 
 class LexicalAnalyzer:
-    patterns = [PatternKeyword(), PatternIdentifier(), PatternNumber(), PatternDivider(), PatternOperator(), PatternString()]
+    patterns = [PatternKeyword(), PatternOperator(), PatternIdentifier(), PatternNumber(), PatternDivider(), PatternString()]
 
     def parse(self, code):
         code_copy = code
