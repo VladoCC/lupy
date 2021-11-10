@@ -125,7 +125,7 @@ class PatternOperator(AbstractPattern):
 
 class PatternKeyword(AbstractPattern):
     def regex(self):
-        return r"(?:\bdef\b|\breturn\b|\bbreak\b|\bcontinue\b|\bpass\b|\bfor\b|\bwhile\b|\bif\b|\belif\b|\belse\b|\bprint\b|\brange\b|\blen\b|\bin\b|\bdict\b|\bTrue\b|\bFalse\b|\bNone\b)"
+        return r"(?:\bdef\b|\breturn\b|\bbreak\b|\bcontinue\b|\bpass\b|\bfor\b|\bwhile\b|\bif\b|\belif\b|\belse\b|\bprint\b|\brange\b|\blen\b|\bin\b|\bdict\b|\bTrue\b|\bFalse\b)"
 
     def token(self, match: str, line: int, pos: int):
         return TokenKeyword(line, pos, match)
