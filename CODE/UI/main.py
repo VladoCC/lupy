@@ -1,9 +1,7 @@
 import pyforms
 from   pyforms          import BaseWidget
 from   pyforms.controls import ControlTextArea
-from   pyforms.controls import ControlText
 from   pyforms.controls import ControlButton
-from termcolor import colored, cprint
 
 
 class Main(BaseWidget):
