@@ -7,6 +7,7 @@ from syntactic import EarleyParser
 from semantic import SemanticAnalyzer
 from exceptions import AnalyzerError
 
+
 analyzer = LexicalAnalyzer()
 
 
@@ -35,7 +36,7 @@ def main():
 			lua_code = translate(py_code)
 		except AnalyzerError as e:
 			error = e
-		
+
 		print("Status:", "SUCCESS" if error is None else "ERROR")
 		if error is None:
 			filename = "output/" + file[6:-2] + "lua"
