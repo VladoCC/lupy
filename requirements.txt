@@ -1,5 +1,5 @@
 nltk~=3.6.5
-pyqt~=5.15.6
+pyqt~=5.15.2
 pyforms~=3.0.0
 opencv-python-headless~=4.5.4.58
 lupa~=1.10
