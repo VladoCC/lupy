@@ -16,7 +16,6 @@ def translate(code):
     tokens = analyzer.parse(code)
     tree = EarleyParser(tokens).parse()
     SemanticAnalyzer(tree).check_tree()
-    print(generate(tokens))
     return generate(tokens)
 
 

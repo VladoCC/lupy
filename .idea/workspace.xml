@@ -128,8 +128,8 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.main (1)" />
       <item itemvalue="Python.UI" />
+      <item itemvalue="Python.main (1)" />
       <item itemvalue="Python.ui" />
     </list>
     <recent_temporary>
