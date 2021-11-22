@@ -7,5 +7,6 @@ Translates all .py files from /CODE/input dir and saves lua code into /CODE/outp
 ```
 pip install -r requirements.txt
 cd .\CODE\
-python main.py
+python ui.py #with interface
+python main.pu #without interface
 ```
