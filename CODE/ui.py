@@ -1,7 +1,7 @@
 import pyforms
-from   pyforms          import BaseWidget
-from   pyforms.controls import ControlTextArea
-from   pyforms.controls import ControlButton
+from pyforms import BaseWidget
+from pyforms.controls import ControlTextArea
+from pyforms.controls import ControlButton
 
 from generator import generate
 from lexical import LexicalAnalyzer
@@ -48,4 +48,4 @@ class Main(BaseWidget):
             self._errors.value = errors
 
 
-if __name__ == "__main__": pyforms.start_app( Main, geometry=(200, 200, 900, 600) )
+if __name__ == "__main__": pyforms.start_app(Main, geometry=(200, 200, 900, 600))

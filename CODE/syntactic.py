@@ -84,8 +84,7 @@ class Grammar(object):
 
 	def is_tag(self, sym):
 		if not self.is_terminal(sym):
-			return all(self.is_terminal(s) for r in self.rules[sym] for s in
-			           r.rhs)
+			return all(self.is_terminal(s) for r in self.rules[sym] for s in r.rhs)
 
 		return False
 
@@ -110,8 +109,7 @@ class EarleyState(object):
 
 	def __eq__(self, other):
 		if type(other) is EarleyState:
-			return self.rule == other.rule and self.dot == other.dot and \
-			       self.sent_pos == other.sent_pos
+			return self.rule == other.rule and self.dot == other.dot and self.sent_pos == other.sent_pos
 
 		return False
 
@@ -124,12 +122,12 @@ class EarleyState(object):
 	def __str__(self):
 		def str_helper(state):
 			return ('(' + state.rule.lhs + ' -> ' +
-			        ' '.join(state.rule.rhs[:state.dot] + ['*'] +
-			                 state.rule.rhs[state.dot:]) +
-			        (', [%d, %d])' % (state.sent_pos, state.chart_pos)))
+					' '.join(state.rule.rhs[:state.dot] + ['*'] +
+							 state.rule.rhs[state.dot:]) +
+					(', [%d, %d])' % (state.sent_pos, state.chart_pos)))
 
 		return (str_helper(self) +
-		        ' (' + ', '.join(str_helper(s) for s in self.back_pointers) + ')')
+				' (' + ', '.join(str_helper(s) for s in self.back_pointers) + ')')
 
 	def next(self):
 		if self.dot < len(self):
@@ -180,13 +178,11 @@ class Chart(object):
 		return self.__str__()
 
 	def __str__(self):
-		return '\n\n'.join([("Chart[%d]:\n" % i) + str(entry) for i, entry in
-		                    enumerate(self.entries)])
+		return '\n\n'.join([("Chart[%d]:\n" % i) + str(entry) for i, entry in enumerate(self.entries)])
 
 	@staticmethod
 	def init(l):
-		return Chart([(ChartEntry([]) if i > 0 else
-		               ChartEntry([EarleyState.init()])) for i in range(l)])
+		return Chart([(ChartEntry([]) if i > 0 else ChartEntry([EarleyState.init()])) for i in range(l)])
 
 
 class TreeToken:
@@ -195,6 +191,7 @@ class TreeToken:
 
 	def __str__(self):
 		return self.token.content
+
 
 class EarleyParser(object):
 	def __init__(self, tokens, grammar=Grammar.load_grammar("grammar/grammar.txt")):
@@ -221,27 +218,26 @@ class EarleyParser(object):
 
 	def predictor(self, state, pos):
 		for rule in self.grammar[state.next()]:
-			self.chart[pos].add(EarleyState(rule, dot=0,
-			                                sent_pos=state.chart_pos, chart_pos=pos))
+			self.chart[pos].add(EarleyState(rule, dot=0, sent_pos=state.chart_pos, chart_pos=pos))
 
 	def scanner(self, state, pos):
 		if state.chart_pos < len(self.words):
-			word =  self.words[pos] if len(self.words) > pos else ""
+			word = self.words[pos] if len(self.words) > pos else ""
 
 			if word == state.next():
 				self.chart[pos + 1].add(EarleyState(state.rule,
-				                                    dot=state.dot + 1, sent_pos=state.chart_pos,
-				                                    chart_pos=(state.chart_pos),
-				                                    back_pointers = state.back_pointers))
+													dot=state.dot + 1, sent_pos=state.chart_pos,
+													chart_pos=(state.chart_pos),
+													back_pointers=state.back_pointers))
 
 	def completer(self, state, pos):
 		for prev_state in self.chart[state.chart_pos]:
 			if prev_state.next() == state.rule.lhs:
 				test = (prev_state.back_pointers + [state])
 				self.chart[pos].add(EarleyState(prev_state.rule,
-				                                dot=(prev_state.dot + 1), sent_pos=prev_state.chart_pos,
-				                                chart_pos=prev_state.chart_pos,
-				                                back_pointers=(prev_state.back_pointers + [state])))
+												dot=(prev_state.dot + 1), sent_pos=prev_state.chart_pos,
+												chart_pos=prev_state.chart_pos,
+												back_pointers=(prev_state.back_pointers + [state])))
 
 	def parse(self):
 		def is_terminal(state):
@@ -256,7 +252,7 @@ class EarleyParser(object):
 						self.predictor(state, i)
 				else:
 					self.completer(state, i)
-		
+
 		return self._get()
 
 	def _get(self):
