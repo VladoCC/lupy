@@ -142,7 +142,7 @@ class PatternKeyword(Pattern):
 
 class PatternString(Pattern):
 	def regex(self):
-		return r"(?:\".*\"|\'.*\')"
+		return r"(?:\"[^\"]*\"|\'[^']*\')"
 	
 	def token(self, match: str, line: int, pos: int):
 		return TokenString(line, pos, match)

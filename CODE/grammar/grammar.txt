@@ -5,7 +5,7 @@ S -> <program>
 <Identifiers> -> <Identifier> | <Identifier> , <Identifiers>
 <boolean> -> True | False
 <logical_operation> -> and | or | <equivalence_operations>
-<boolean_expressions> -> <boolean> | not <boolean_expressions> | <Identifier> | <boolean_expressions> <logical_operation> <boolean_expressions> | <comparison_expressions>
+<boolean_expressions> -> <boolean> | not <boolean_expressions> | <Identifier> | <function_call> | <boolean_expressions> <logical_operation> <boolean_expressions> | <comparison_expressions>
 <comparison_expressions> -> <mathematical_expressions> <comparison_operations> <mathematical_expressions> | <String_expressions> <equivalence_operations> <String_expressions>
 <mathematical_expressions> -> <first_priority>
 <first_priority> -> <second_priority> + <first_priority> | <second_priority> - <first_priority> | <second_priority>
@@ -13,31 +13,30 @@ S -> <program>
 <third_priority> -> <fourth_priority> ** <third_priority> | <fourth_priority>
 <fourth_priority> -> ( <first_priority> ) | <Number> | <Identifier> | <function_call> | <length_expressions>
 <length_expressions> -> len ( <function_call> ) | len ( <Identifier> ) | len ( <collection> )
-<String_expressions> -> <String> | <function_call> | <String> + <String_expressions> | <String_expressions> + <Identifier> | <Identifier> + <String_expressions> | <String_expressions> + <Identifier> + <String_expressions>
-<concatenated_expressions> -> <Identifier> | <String_expressions> | <mathematical_expressions> | <boolean_expressions> | <function_call> | <collection>
+<String_expressions> -> <String> | <Identifier> | <function_call> | <String_expressions> + <String_expressions>
+<any_expressions> -> <Identifier> | <String_expressions> | <mathematical_expressions> | <boolean_expressions> | <function_call> | <collection>
 <left_expressions> -> <Identifier> | <String_expressions> | <mathematical_expressions> | <boolean_expressions> | <function_call>
-<function_call> -> <Identifier> ( <arguments> ) | <Identifier> ( )
-<output> -> print ( <concatenated_expressions> )
-<assignment> -> <Identifier> = <concatenated_expressions>
+<function_call> -> <Identifier> ( <expressions> ) | <Identifier> ( )
+<output> -> print ( <any_expressions> )
+<assignment> -> <Identifier> = <any_expressions>
 <comparison_operations> -> < | <= | > | >= | <equivalence_operations>
 <equivalence_operations> -> != | ==
 <simple_sentence> -> <sentence_body> newline | newline
-<complex_sentence> -> <condition> | <cycle>
+<complex_sentence> -> <condition> | <loop>
 <sentence> -> <simple_sentence> | <complex_sentence>
-<sentence_body> -> <concatenated_expressions> | <output> | <assignment> | pass | return <concatenated_expressions> | len ( <function_call> )
+<sentence_body> -> <any_expressions> | <output> | <assignment> | <special_body>
+<special_body> -> pass | return <any_expressions>
 <sentences> -> <sentence> <sentences> | <sentence>
 <block> -> <simple_sentence> | newline indent <sentences> dedent
 <condition> -> if <conditional>
 <conditional> -> <boolean_expressions> : <block> <otherwise> | <boolean_expressions> : <block>
 <otherwise> -> elif <conditional> | else : <block>
-<expressions> -> <concatenated_expressions> , <expressions> | <concatenated_expressions>
-<arguments> -> <expressions>
+<expressions> -> <any_expressions> , <expressions> | <any_expressions>
 <named_expression> -> <assignment> , <named_expression> | <assignment>
-<named_arguments> -> <named_expression>
-<match> -> <left_expressions> : <concatenated_expressions>
+<match> -> <left_expressions> : <any_expressions>
 <matches> -> <match> , <matches> | <match>
-<collection> -> dict ( <named_arguments> ) | dict ( ) | { <arguments> } | { <matches> } | { } | [ <arguments> ] | [ ] | <Identifier> | <function_call>
-<cycle> -> <cycle> | <for_loop>
-<cycle> -> while <boolean_expressions> : <block>
+<collection> -> dict ( <named_expression> ) | dict ( ) | { <expressions> } | { <matches> } | { } | [ <expressions> ] | [ ] | <Identifier> | <function_call>
+<loop> -> <while_loop> | <for_loop>
+<while_loop> -> while <boolean_expressions> : <block>
 <for_loop> -> for <Identifier> in <collection> : <block> | for <Identifier> in range ( <mathematical_expressions> ) : <block> | for <Identifier> in range ( <mathematical_expressions> , <mathematical_expressions> ) : <block>
 <function> -> def <Identifier> ( <Identifiers> ) : <block> | def <Identifier> ( ) : <block>
