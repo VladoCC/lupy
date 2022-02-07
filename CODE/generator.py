@@ -68,62 +68,434 @@ class Generator:
 		self.lua_code = ""
 	
 	def generate(self, tree: ParentedTree):
-		self.parse_program(tree[0])
+		self.pos = 0
+		self.line = 0
+		self.lua_code = ""
+		self.generate_program(tree[0])
+		return self.lua_code
 	
-	def parse_program(self, tree: ParentedTree):
+	def generate_program(self, tree: ParentedTree):
 		for child in tree:
 			if child.label() == "<function>":
-				self.parse_function(child)
+				self.generate_function(child)
 			elif child.label() == "<sentence>":
-				self.parse_sentence(child)
+				self.generate_sentence(child)
 			elif child.label() == "<program>":
-				self.parse_program(child)
+				self.generate_program(child)
 			else:
 				raise Exception()
+		print(self.lua_code)
 		
-	def parse_function(self, tree: ParentedTree):
+	def generate_function(self, tree: ParentedTree):
 		start_token: Token = tree[0].token
-		self.go_to(start_token.pos, start_token.line)
+		self.go_to_pos(start_token.pos, start_token.line)
 		self.add("function ", 4)
-		self.parse_terminal(tree[1])
+		self.generate_terminal(tree[1])
 		self.add("(")
 		if isinstance(tree[3], ParentedTree):
-			self.parse_identifiers(tree[3])
+			self.generate_identifiers(tree[3])
 		self.add(")")
-		self.pos += 1
+		colon: Token = tree[-2].token
+		self.go_to_pos(colon.pos + 1, colon.line)
 		block = tree[-1]
-		self.parse_block(block)
+		self.generate_block(block)
 		if len(block) == 1:
-			self.add(" end")
+			self.add(" end", 0)
 		else:
-			self.add("\n" + " " * start_token.pos + "end")
-		
-		print(self.lua_code)
+			self.add("\n" + " " * start_token.pos + "end", 0)
 	
-	def parse_block(self, tree: ParentedTree):
+	def generate_block(self, tree: ParentedTree):
 		if len(tree) == 1:
-			self.parse_sentence(tree[0])
+			self.generate_simple_sentence(tree[0])
 		else:
 			self.newline()
-			sentences = tree[2]
-			self.go_to()
+			self.generate_sentences(tree[2])
 			
+	def generate_sentences(self, tree: ParentedTree):
+		current = tree[0]
+		self.generate_sentence(current)
+		if len(tree) > 1:
+			self.generate_sentences(tree[1])
+	
+	def generate_sentence(self, tree: ParentedTree):
+		internal = tree[0]
+		if internal.label() == "<simple_sentence>":
+			self.generate_simple_sentence(internal)
+		elif internal.label() == "<complex_sentence>":
+			self.generate_complex_sentence(internal)
+	
+	def generate_complex_sentence(self, tree: ParentedTree):
+		internal = tree[0]
+		if internal.label() == "<condition>":
+			self.generate_condition(internal)
+		elif internal.label() == "<loop>":
+			self.generate_loop(internal)
+	
+	def generate_condition(self, tree: ParentedTree):
+		if_token: Token = tree[0].token
+		self.go_to_pos(if_token.pos, if_token.line)
+		self.add(if_token.content)
+		cond = tree[1]
+		self.generate_conditional(cond)
+		
+		has_else = len(cond) > 3
+		multiline_block = len(cond[2]) > 1
+		if has_else or multiline_block:
+			self.add("\n" + " " * if_token.pos + "end", 0)
+		else:
+			self.add(" end", 0)
 			
+	def generate_conditional(self, tree: ParentedTree):
+		self.generate_boolean_expression(tree[0])
+		colon: Token = tree[1].token
+		self.go_to_pos(colon.pos, colon.line)
+		self.add(" then", 1)
+		self.generate_block(tree[2])
+		
+		if len(tree) > 3:
+			self.generate_otherwise(tree[3])
+		
+	def generate_otherwise(self, tree: ParentedTree):
+		first_token: Token = tree[0].token
+		self.go_to_pos(first_token.pos, first_token.line)
+		if len(tree) == 2:
+			self.add("elseif", 4)
+			self.generate_conditional(tree[1])
+		else:
+			self.add(first_token.content)
+			colon: Token = tree[1].token
+			self.go_to_pos(colon.pos + 1, colon.line)
+			self.generate_block(tree[2])
 	
-	def parse_sentence(self, tree: ParentedTree):
-		pass
+	def generate_loop(self, tree: ParentedTree):
+		internal = tree[0]
+		if internal.label() == "<while_loop>":
+			self.generate_while(internal)
+		elif internal.label() == "<for_loop>":
+			self.generate_for(internal)
+		
+		block = internal[-1]
+		start_token = tree.leaves()[0].token
+		if len(block) == 1:
+			self.add(" end", 0)
+		else:
+			self.add("\n" + " " * start_token.pos + "end", 0)
 	
-	def parse_identifiers(self, tree: ParentedTree):
+	def generate_while(self, tree: ParentedTree):
+		while_token: Token = tree[0].token
+		self.go_to_pos(while_token.pos, while_token.line)
+		self.add(while_token.content)
+		self.generate_boolean_expression(tree[1])
+		colon: Token = tree[2].token
+		self.go_to_pos(colon.pos + 1, colon.line)
+		self.generate_block(tree[3])
+	
+	def generate_for(self, tree: ParentedTree):
+		for_token: Token = tree[0].token
+		self.go_to_pos(for_token.pos, for_token.line)
+		self.add(for_token.content)
+		self.generate_terminal(tree[1])
+		in_token: Token = tree[2].token
+		self.go_to_pos(in_token.pos, in_token.line)
+		is_collection = isinstance(tree[3], ParentedTree)
+		if is_collection:
+			self.add(in_token.content)
+			first: Token = tree[3].leaves()[0].token
+			self.go_to_pos(first.pos, first.line)
+			self.add("pairs(", 0)
+			self.generate_collection(tree[3])
+			self.add(")", 0)
+		else:
+			self.add("=", 2)
+			range: Token = tree[3].token
+			self.go_to_pos(range.pos, range.line)
+			self.pos += len(range.content)
+			bracket: Token = tree[4].token
+			self.go_to_pos(bracket.pos, bracket.line)
+			self.pos += len(bracket.content)
+			
+			has_both = tree[6].token.content == ","
+			end: ParentedTree = tree[5]
+			if has_both:
+				self.generate_mathematical_expressions(tree[5])
+				self.generate_token(tree[6])
+				end = tree[7]
+			else:
+				self.add("0, ", 0)
+			
+			first: Token = end.leaves()[0].token
+			self.go_to_pos(first.pos, first.line)
+			if len(end.leaves()) == 1:
+				self.add(str(int(first.content) - 1), len(first.content))
+			else:
+				self.add("(", 0)
+				self.generate_mathematical_expressions(end)
+				self.add(" - 1)", 0)
+			
+			bracket: Token = tree[-3].token
+			self.go_to_pos(bracket.pos, bracket.line)
+			self.pos += len(bracket.content)
+		
+		colon: Token = tree[-2].token
+		self.go_to_pos(colon.pos, colon.line)
+		self.add(" do", 1)
+		self.generate_block(tree[-1])
+	
+	def generate_simple_sentence(self, tree: ParentedTree):
+		if len(tree) > 1:
+			self.generate_sentence_body(tree[0])
+	
+	def generate_sentence_body(self, tree: ParentedTree):
+		internal = tree[0]
+		if internal.label() == "<any_expressions>":
+			self.generate_any_expressions(internal)
+		elif internal.label() == "<output>":
+			self.generate_output(internal)
+		elif internal.label() == "<assignment>":
+			self.generate_assignment(internal)
+		elif internal.label() == "<special_body>":
+			self.generate_special_body(internal)
+	
+	def generate_special_body(self, tree: ParentedTree):
+		first: Token = tree[0].token
+		self.go_to(first)
+		if first.content == "pass":
+			self.skip(first)
+		elif first.content == "return":
+			self.add(first.content)
+			self.generate_any_expressions(tree[1])
+	
+	def generate_length_expressions(self, tree: ParentedTree):
+		first: Token = tree[0].token
+		self.go_to(first)
+		self.add("#", len(first.content))
+		self.generate_token(tree[1])
+		content = tree[2]
+		if content.label() == "<function_call>":
+			self.generate_function_call(content)
+		elif content.label() == "<Identifier>":
+			self.generate_terminal(content)
+		elif content.label() == "<collection>":
+			self.generate_collection(content)
+		self.generate_token(tree[3])
+	
+	def generate_assignment(self, tree: ParentedTree):
+		self.generate_terminal(tree[0])
+		self.generate_token(tree[1])
+		self.generate_any_expressions(tree[2])
+	
+	def generate_output(self, tree: ParentedTree):
+		self.generate_token(tree[0])
+		self.generate_token(tree[1])
+		self.generate_any_expressions(tree[2])
+		self.generate_token(tree[3])
+	
+	def generate_expressions(self, tree: ParentedTree):
+		self.generate_any_expressions(tree[0])
+		if len(tree) > 1:
+			self.generate_token(tree[1])
+			self.generate_expressions(tree[2])
+	
+	def generate_any_expressions(self, tree: ParentedTree):
+		internal = tree[0]
+		if internal.label() == "<Identifier>":
+			self.generate_terminal(internal)
+		elif internal.label() == "<String_expressions>":
+			self.generate_string_expressions(internal)
+		elif internal.label() == "<mathematical_expressions>":
+			self.generate_mathematical_expressions(internal)
+		elif internal.label() == "<boolean_expressions>":
+			self.generate_boolean_expression(internal)
+		elif internal.label() == "<function_call>":
+			self.generate_function_call(internal)
+		elif internal.label() == "<collection>":
+			self.generate_collection(internal)
+	
+	def generate_boolean_expression(self, tree: ParentedTree):
+		first = tree[0]
+		if isinstance(first, ParentedTree):
+			if first.label() == "<boolean>":
+				token = first[0].token
+				self.go_to(token)
+				self.add(token.content.lower())
+			elif first.label() == "<Identifier>":
+				self.generate_terminal(first)
+			elif first.label() == "<function_call>":
+				self.generate_function_call(first)
+			elif first.label() == "<comparison_expressions>":
+				self.generate_comparison_expressions(first)
+			else:
+				op = tree[1][0]
+				self.generate_boolean_expression(tree[0])
+				if isinstance(op, ParentedTree):
+					self.generate_equivalence_operations(op)
+				else:
+					self.go_to(op.token)
+					self.add(op.token.content)
+				self.generate_boolean_expression(tree[2])
+		elif first.token.content == "not":
+			self.generate_token(first)
+			self.generate_boolean_expression(tree[1])
+	
+	def generate_comparison_expressions(self, tree: ParentedTree):
+		first = tree[0]
+		if first.label() == "<mathematical_expressions>":
+			self.generate_mathematical_expressions(tree[0])
+			self.generate_comparison_operations(tree[1])
+			self.generate_mathematical_expressions(tree[2])
+		elif first.label() == "<String_expressions>":
+			self.generate_string_expressions(tree[0])
+			self.generate_equivalence_operations(tree[1])
+			self.generate_string_expressions(tree[2])
+	
+	def generate_mathematical_expressions(self, tree: ParentedTree):
+		self.generate_first_priority(tree[0])
+	
+	def generate_string_expressions(self, tree: ParentedTree):
+		if len(tree) > 1:
+			self.generate_string_expressions(tree[0])
+			self.generate_token(tree[1])
+			self.generate_string_expressions(tree[2])
+		else:
+			internal = tree[0]
+			if internal.label() == "<String>":
+				self.generate_terminal(internal)
+
+	def generate_collection(self, tree: ParentedTree):
+		if isinstance(tree[0], ParentedTree):
+			if tree[0].label() == "<Identifier>":
+				self.generate_terminal(tree[0])
+			else:
+				self.generate_function_call(tree[0])
+		else:
+			first: Token = tree[0].token
+			self.go_to(first)
+			if len(tree) == 2 or (len(tree) == 3 and tree[0].token.content == "dict"):
+				self.skip(tree[-1])
+				self.add("{}", 0)
+			else:
+				if first.content == "dict":
+					self.skip(first)
+					self.go_to(tree[1].token)
+					self.add("{")
+					self.generate_named_expression(tree[2])
+					self.go_to(tree[3].token)
+					self.add("}")
+				elif first.content == "[":
+					self.add("{")
+					self.generate_collection_expressions(tree[1])
+					self.go_to(tree[2].token)
+					self.add("}")
+				else:
+					self.generate_token(tree[0])
+					if tree[1].label() == "<expressions>":
+						self.generate_collection_expressions(tree[1])
+					else:
+						self.generate_matches(tree[1])
+					self.generate_token(tree[2])
+	
+	def generate_matches(self, tree: ParentedTree):
+		match = tree[0]
+		self.go_to(match[0].leaves()[0].token)
+		self.add("[", 0)
+		self.generate_left_expressions(match[0])
+		self.add("]", 0)
+		self.go_to(match[1].token)
+		self.add(" =", 1)
+		self.generate_any_expressions(match[2])
+		if len(tree) > 1:
+			self.generate_token(tree[1])
+			self.generate_matches(tree[2])
+		
+	def generate_left_expressions(self, tree: ParentedTree):
+		self.generate_any_expressions(tree)
+	
+	def generate_collection_expressions(self, tree: ParentedTree, index=0):
+		self.go_to(tree[0].leaves()[0].token)
+		self.add("[" + str(index) + "] = ", 0)
+		self.generate_any_expressions(tree[0])
+		if len(tree) > 1:
+			self.generate_token(tree[1])
+			self.generate_collection_expressions(tree[2], index + 1)
+	
+	def generate_named_expression(self, tree: ParentedTree):
+		self.generate_assignment(tree[0])
+		if len(tree) > 1:
+			self.generate_token(tree[1])
+			self.generate_named_expression(tree[2])
+	
+	def generate_function_call(self, tree: ParentedTree):
+		self.generate_terminal(tree[0])
+		self.generate_token(tree[1])
+		if len(tree) > 3:
+			self.generate_expressions(tree[2])
+		self.generate_token(tree[-1])
+	
+	def generate_identifiers(self, tree: ParentedTree):
 		id_token: Token = tree[0][0].token
-		self.go_to(id_token.pos, id_token.line)
+		self.go_to_pos(id_token.pos, id_token.line)
 		self.add(id_token.content)
 		if len(tree) > 1:
 			self.add(",")
-			self.parse_identifiers(tree[2])
+			self.generate_identifiers(tree[2])
 	
-	def parse_terminal(self, tree: ParentedTree):
-		token = tree[0].token
-		self.go_to(token.pos, token.line)
+	def generate_comparison_operations(self, tree: ParentedTree):
+		internal = tree[0]
+		if isinstance(internal, ParentedTree):
+			self.generate_equivalence_operations(internal)
+		else:
+			token = internal.token
+			self.go_to(token)
+			self.add(token.content)
+	
+	def generate_equivalence_operations(self, tree: ParentedTree):
+		token: Token = tree[0].token
+		self.go_to(token)
+		if token.content == "!=":
+			self.add("~=")
+		else:
+			self.add(token.content)
+	
+	def generate_first_priority(self, tree: ParentedTree):
+		self.generate_second_priority(tree[0])
+		if len(tree) > 1:
+			self.generate_token(tree[1])
+			self.generate_first_priority(tree[2])
+	
+	def generate_second_priority(self, tree: ParentedTree):
+		self.generate_third_priority(tree[0])
+		if len(tree) > 1:
+			self.generate_token(tree[1])
+			self.generate_second_priority(tree[2])
+	
+	def generate_third_priority(self, tree: ParentedTree):
+		self.generate_fourth_priority(tree[0])
+		if len(tree) > 1:
+			token: Token = tree[1].token
+			self.go_to(token)
+			self.add("^", 2)
+			self.generate_third_priority(tree[2])
+	
+	def generate_fourth_priority(self, tree: ParentedTree):
+		if len(tree) > 1:
+			self.generate_token(tree[0])
+			self.generate_first_priority(tree[1])
+			self.generate_token(tree[2])
+		else:
+			internal = tree[0]
+			if internal.label() == "<Number>" or internal.label() == "<Identifier>":
+				self.generate_terminal(internal)
+			elif internal.label() == "<function_call>":
+				self.generate_function_call(internal)
+			elif internal.label() == "<length_expressions>":
+				self.generate_length_expressions(internal)
+	
+	def generate_terminal(self, tree: ParentedTree):
+		self.generate_token(tree[0])
+	
+	def generate_token(self, tree_token: TreeToken):
+		token = tree_token.token
+		self.go_to_pos(token.pos, token.line)
 		self.add(token.content)
 	
 	def add(self, text: str, move: int = -1):
@@ -132,12 +504,18 @@ class Generator:
 		self.lua_code += text
 		self.pos += move
 	
-	def newline(self, indentation = 0):
+	def skip(self, token: Token):
+		self.pos = token.pos + len(token.content)
+	
+	def newline(self, indentation=0):
 		self.lua_code += "\n" + " " * indentation
 		self.line += 1
 		self.pos = indentation
 	
-	def go_to(self, pos: int = -1, line: int = -1):
+	def go_to(self, token: Token):
+		self.go_to_pos(token.pos, token.line)
+	
+	def go_to_pos(self, pos: int, line: int):
 		if line == -1:
 			line = self.line
 		if pos == -1:
@@ -151,250 +529,3 @@ class Generator:
 		if pos > self.pos:
 			self.lua_code += " " * (pos - self.pos)
 			self.pos = pos
-		
-	def visit(self, tree: ParentedTree):
-		found = False
-		for child in tree:
-			if not child in self.visited:
-				found = True
-				current = child
-				break
-		
-		if not found:
-			self.visited.append(tree)
-			current = tree.parent()
-
-
-def generate(tokens, tree: ParentedTree = None):
-	if tree is not None:
-		Generator().generate(tree)
-	lua_code = ""
-	line = 0
-	pos = 0
-
-	indent_state = None
-	indent_level = 0
-	oneliner = False
-
-	while len(tokens) > 0:
-		token = tokens[0]
-		assert isinstance(token, Token)
-		while token.line > line:
-			line += 1
-			pos = 0
-			lua_code += "\n"
-		while token.pos > pos:
-			pos += 1
-			lua_code += " "
-		
-		if token.type() == Type.Identifier or token.type() == Type.String \
-			or token.type() == Type.Number:
-			lua_code += token.content
-			pos += len(token.content)
-		elif token.type() == Type.Operator:
-			if token.content == "**":
-				lua_op = "^"
-			elif token.content == "!=":
-				lua_op = "~="
-			else:
-				lua_op = token.content
-			lua_code += lua_op
-			pos += len(token.content)
-		elif token.type() == Type.Divider:
-			whitelist = ["(", ")", ","]
-			if token.content in whitelist:
-				lua_code += token.content
-				pos += len(token.content)
-			elif token.content == ":":
-				if indent_state == Construction.Condition:
-					lua_code += " then"
-				elif indent_state == Construction.Loop:
-					lua_code += " do"
-				
-				if tokens[1].content != "newline":
-					oneliner = True
-
-				if indent_state is not None:
-					pos += 1
-
-			elif token.content == "dedent":
-				condition = indent_state != Construction.Condition \
-				            or len(tokens) < 2 or (tokens[1].content != "else"
-				                                   and tokens[1].content != "elif")
-				if condition:
-					while indent_level > pos:
-						pos += 1
-						lua_code += " "
-					lua_code += "end\n"
-					pos = 0
-					line += 1
-				else:
-					pos += len(token.content)
-				indent_state = None
-				indent_level = 0
-			elif token.content == "{" or token.content == "[":
-				dict_tokens = [token]
-				while not tokens[1].content == "}" and not tokens[1].content == "]":
-					dict_tokens.append(tokens.pop(1))
-				dict_tokens.append(tokens.pop(1))
-				last = dict_tokens[len(dict_tokens) - 1]
-				lua_code += generate_table(dict_tokens)
-				line = last.line
-				pos = last.pos + len(last.content)
-			elif token.content == "newline" and oneliner:
-				oneliner = False
-				lua_code += " end"
-		elif token.type() == Type.Keyword:
-			whitelist = ["return", "break", "continue", "print"]
-			constitutions = {"True": "true", "False": "false", "Node": "nil"}
-			if token.content in whitelist:
-				lua_code += token.content
-				pos += len(token.content)
-			elif token.content in constitutions.keys():
-				lua_code += constitutions[token.content]
-				pos += len(token.content)
-			elif token.content == "len":
-				pos += len(token.content) + 2
-				lua_code += "#"
-				tokens.pop(1)
-				tokens.pop(3)
-			elif token.content == "def":
-				pos += len(token.content)
-				lua_code += "function"
-				indent_state = Construction.Function
-			elif token.content == "if" or token.content == "elif":
-				pos += len(token.content)
-				if token.content == "elif":
-					lua_code += "else"
-				lua_code += "if "
-				indent_state = Construction.Condition
-				indent_level = token.pos
-			elif token.content == "else":
-				pos += len(token.content)
-				lua_code += token.content
-				indent_state = Construction.Else
-				indent_level = token.pos
-			elif token.content == "while" or token.content == "for":
-				pos += len(token.content)
-				lua_code += token.content
-				indent_state = Construction.Loop
-				indent_level = token.pos
-			elif token.content == "in":
-				for_tokens = []
-				while tokens[1].content != ":":
-					for_tokens.append(tokens.pop(1))
-				
-				last = for_tokens[len(for_tokens) - 1]
-				
-				if for_tokens[0].content == "range":
-					lua_code += "= "
-					for_tokens.pop(0)
-					for_tokens.pop(0)
-					last = for_tokens.pop(len(for_tokens) - 1)
-					for_tokens = as_proxy_list(for_tokens)
-					first_end = -1
-					depth = 0
-					for i in range(len(for_tokens)):
-						t = for_tokens[i]
-						if t.content == "(":
-							depth += 1
-						elif t.content == ")":
-							depth -= 1
-						elif t.content == "," and depth == 0:
-							first_end = i
-							break
-
-					if first_end == -1:
-						lua_code += "0, "
-					
-					lua_code += generate(for_tokens)
-					lua_code += " - 1"
-				else:
-					lua_code += token.content
-					lua_code += " pairs("
-					lua_code += generate(as_proxy_list(for_tokens))
-					lua_code += ")"
-				line = last.line
-				pos = last.pos + len(last.content)
-			elif token.content == "dict":
-				pos += len(token.content)
-				dict_tokens = []
-				active = True
-				counter = 0
-				while active:
-					if tokens[1].content == "(":
-						counter += 1
-					elif tokens[1].content == ")":
-						counter -= 1
-					active = counter != 0
-					dict_tokens.append(tokens.pop(1))
-				last = dict_tokens[len(dict_tokens) - 1]
-				lua_code += generate_table(dict_tokens)
-				line = last.line
-				pos = last.pos + len(last.content)
-		else:
-			lua_code += token.content
-			pos += len(token.content)
-		tokens.pop(0)
-
-	return lua_code
-
-
-def generate_table(dict_tokens: List[Token]):
-	if len(dict_tokens) == 2:
-		return "{}"
-	start = dict_tokens.pop(0)
-	dict_tokens.pop(len(dict_tokens) - 1)
-	line = start.line
-	code = "{"
-	pos = start.pos + 1
-	delimiter = ":" if any(token.content == ":" for token in dict_tokens) else "="
-	if delimiter == ":":
-		code += "["
-
-	add_bracket = False
-	while len(dict_tokens) > 0:
-		token = dict_tokens[0]
-		assert isinstance(token, Token)
-		while token.line > line:
-			line += 1
-			pos = 0
-			code += "\n"
-		while token.pos > pos:
-			pos += 1
-			code += " "
-
-		if add_bracket:
-			add_bracket = False
-			code += "["
-		if delimiter == ":" and token.content == ":":
-			code += "] ="
-		elif token.content == "=":
-			code += " = "
-		else:
-			code += generate([ProxyToken(token)])
-		pos += len(token.content)
-		if delimiter == ":" and token.content == ",":
-			add_bracket = True
-		dict_tokens.pop(0)
-	code += "}"
-	return code
-
-
-def as_proxy_list(tokens):
-	proxy_tokens = []
-	first = tokens[0]
-	for token in tokens:
-		proxy_line = token.line - first.line
-		proxy_pos = token.pos - first.pos
-		proxy_tokens.append(ProxyToken(token, proxy_line, proxy_pos))
-	return proxy_tokens
-
-
-class ProxyToken(Token):
-	def __init__(self, token: Token, line: int = 0, pos: int = 0):
-		super().__init__(line, pos, token.content)
-		self.token_type = token.type()
-
-	def type(self):
-		return self.token_type

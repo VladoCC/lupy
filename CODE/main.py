@@ -1,7 +1,9 @@
 from os import listdir
 from os.path import isfile, join
 
-from generator import generate
+from nltk import ParentedTree
+
+from generator import Generator
 from lexical import LexicalAnalyzer
 from syntactic import EarleyParser
 from semantic import SemanticAnalyzer
@@ -13,9 +15,9 @@ analyzer = LexicalAnalyzer()
 
 def translate(code):
 	tokens = analyzer.parse(code)
-	tree = EarleyParser(tokens).parse()
+	tree = ParentedTree.convert(EarleyParser(tokens).parse())
 	SemanticAnalyzer(tree).check_tree()
-	return generate(tokens)
+	return Generator().generate(tree)
 
 
 def main():
