@@ -11,42 +11,42 @@ class TestLexical(unittest.TestCase):
 		code_text = r"""some_variable_name"""
 		received = analyzer.parse(code_text)[0]
 		self.assertIsInstance(received, TokenIdentifier, "This is not an instance of TokenIdentifier class")
-		self.assertIs(received.token_type, Type.Identifier, "This token's token type is not Identifier")
+		self.assertIs(received.type(), Type.Identifier, "This token's token type is not Identifier")
 		self.assertEqual(received.content, "some_variable_name", "This token's content is not correct")
 
 	def test_keyword(self):
 		code_text = r"""True"""
 		received = analyzer.parse(code_text)[0]
 		self.assertIsInstance(received, TokenKeyword, "This is not an instance of TokenKeyword class")
-		self.assertIs(received.token_type, Type.Keyword, "This token's token type is not Keyword")
+		self.assertIs(received.type(), Type.Keyword, "This token's token type is not Keyword")
 		self.assertEqual(received.content, "True", "This token's content is not correct")
 
 	def test_operator(self):
 		code_text = r"""*"""
 		received = analyzer.parse(code_text)[0]
 		self.assertIsInstance(received, TokenOperator, "This is not an instance of TokenOperator class")
-		self.assertIs(received.token_type, Type.Operator, "This token's token type is not Operator")
+		self.assertIs(received.type(), Type.Operator, "This token's token type is not Operator")
 		self.assertEqual(received.content, "*", "This token's content is not correct")
 
 	def test_number(self):
 		code_text = r"""42.354e-42"""
 		received = analyzer.parse(code_text)[0]
 		self.assertIsInstance(received, TokenNumber, "This is not an instance of TokenNumber class")
-		self.assertIs(received.token_type, Type.Number, "This token's token type is not Number")
+		self.assertIs(received.type(), Type.Number, "This token's token type is not Number")
 		self.assertEqual(received.content, "42.354e-42", "This token's content is not correct")
 
 	def test_divider(self):
 		code_text = r"""("""
 		received = analyzer.parse(code_text)[0]
 		self.assertIsInstance(received, TokenDivider, "This is not an instance of TokenDivider class")
-		self.assertIs(received.token_type, Type.Divider, "This token's token type is not Divider")
+		self.assertIs(received.type(), Type.Divider, "This token's token type is not Divider")
 		self.assertEqual(received.content, "(", "This token's content is not correct")
 
 	def test_string(self):
 		code_text = r"""'string'"""
 		received = analyzer.parse(code_text)[0]
 		self.assertIsInstance(received, TokenString, "This is not an instance of TokenString class")
-		self.assertIs(received.token_type, Type.String, "This token's token type is not String")
+		self.assertIs(received.type(), Type.String, "This token's token type is not String")
 		self.assertEqual(received.content, "'string'", "This token's content is not correct")
 
 	def test_indent(self):
@@ -55,7 +55,7 @@ class TestLexical(unittest.TestCase):
 """
 		received = analyzer.parse(code_text)[1]
 		self.assertIsInstance(received, TokenIndent, "This is not an instance of TokenIndent class")
-		self.assertIs(received.token_type, Type.Divider, "This token's token type is not Divider")
+		self.assertIs(received.type(), Type.Divider, "This token's token type is not Divider")
 		self.assertEqual(received.content, "indent", "This token's content is not correct")
 
 	def test_dedent(self):
@@ -64,7 +64,7 @@ class TestLexical(unittest.TestCase):
 """
 		received = analyzer.parse(code_text)[4]
 		self.assertIsInstance(received, TokenIndent, "This is not an instance of TokenIndent class")
-		self.assertIs(received.token_type, Type.Divider, "This token's token type is not Divider")
+		self.assertIs(received.type(), Type.Divider, "This token's token type is not Divider")
 		self.assertEqual(received.content, "dedent", "This token's content is not correct")
 
 	def test_unknown_symbol_error(self):
