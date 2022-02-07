@@ -1,8 +1,9 @@
 from enum import Enum, auto
-
 from typing import List
 
+from syntactic import TreeToken
 from lexical import Token, Type
+from nltk.tree import ParentedTree
 
 
 class Construction(Enum):
@@ -12,7 +13,161 @@ class Construction(Enum):
 	Function = auto()
 
 
-def generate(tokens):
+class Structure(Enum):
+	If = auto()
+	Else = auto()
+	Loop = auto()
+	Function = auto()
+
+
+class State:
+	def __init__(self, structure: Structure, indent_level=0, oneliner: bool = False):
+		super().__init__()
+		self.structure = structure
+		self.oneliner = oneliner
+		self.indent_level = indent_level
+
+
+class Program:
+	line: int = 0
+	pos: int = 0
+	stack: List[State] = []
+	
+	def __init__(self, tokens: list):
+		super().__init__()
+		self.tokens = tokens
+	
+	def next(self):
+		self.tokens.pop(0)
+	
+	def move_to(self, pos=-1, line=-1):
+		if line == -1:
+			line = self.line
+		
+		if pos == -1:
+			pos = self.pos
+		
+		self.line = line
+		self.pos = pos
+	
+	def token(self):
+		return self.tokens[0]
+	
+	def push_state(self, state: State):
+		self.stack.append(state)
+	
+	def pop_state(self) -> State:
+		return self.stack.pop()
+		
+		
+class Generator:
+	
+	def __init__(self):
+		self.pos = 0
+		self.line = 0
+		self.lua_code = ""
+	
+	def generate(self, tree: ParentedTree):
+		self.parse_program(tree[0])
+	
+	def parse_program(self, tree: ParentedTree):
+		for child in tree:
+			if child.label() == "<function>":
+				self.parse_function(child)
+			elif child.label() == "<sentence>":
+				self.parse_sentence(child)
+			elif child.label() == "<program>":
+				self.parse_program(child)
+			else:
+				raise Exception()
+		
+	def parse_function(self, tree: ParentedTree):
+		start_token: Token = tree[0].token
+		self.go_to(start_token.pos, start_token.line)
+		self.add("function ", 4)
+		self.parse_terminal(tree[1])
+		self.add("(")
+		if isinstance(tree[3], ParentedTree):
+			self.parse_identifiers(tree[3])
+		self.add(")")
+		self.pos += 1
+		block = tree[-1]
+		self.parse_block(block)
+		if len(block) == 1:
+			self.add(" end")
+		else:
+			self.add("\n" + " " * start_token.pos + "end")
+		
+		print(self.lua_code)
+	
+	def parse_block(self, tree: ParentedTree):
+		if len(tree) == 1:
+			self.parse_sentence(tree[0])
+		else:
+			self.newline()
+			sentences = tree[2]
+			self.go_to()
+			
+			
+	
+	def parse_sentence(self, tree: ParentedTree):
+		pass
+	
+	def parse_identifiers(self, tree: ParentedTree):
+		id_token: Token = tree[0][0].token
+		self.go_to(id_token.pos, id_token.line)
+		self.add(id_token.content)
+		if len(tree) > 1:
+			self.add(",")
+			self.parse_identifiers(tree[2])
+	
+	def parse_terminal(self, tree: ParentedTree):
+		token = tree[0].token
+		self.go_to(token.pos, token.line)
+		self.add(token.content)
+	
+	def add(self, text: str, move: int = -1):
+		if move == -1:
+			move = len(text)
+		self.lua_code += text
+		self.pos += move
+	
+	def newline(self, indentation = 0):
+		self.lua_code += "\n" + " " * indentation
+		self.line += 1
+		self.pos = indentation
+	
+	def go_to(self, pos: int = -1, line: int = -1):
+		if line == -1:
+			line = self.line
+		if pos == -1:
+			pos = self.pos
+		
+		if line > self.line:
+			self.lua_code += "\n" * (line - self.line)
+			self.line = line
+			self.pos = 0
+		
+		if pos > self.pos:
+			self.lua_code += " " * (pos - self.pos)
+			self.pos = pos
+		
+	def visit(self, tree: ParentedTree):
+		found = False
+		for child in tree:
+			if not child in self.visited:
+				found = True
+				current = child
+				break
+		
+		if not found:
+			self.visited.append(tree)
+			current = tree.parent()
+
+
+def generate(tokens, tree: ParentedTree = None):
+	if tree is not None:
+		Generator().generate(tree)
 	lua_code = ""
 	line = 0
 	pos = 0
@@ -31,7 +186,7 @@ def generate(tokens):
 		while token.pos > pos:
 			pos += 1
 			lua_code += " "
-
+		
 		if token.type() == Type.Identifier or token.type() == Type.String \
 			or token.type() == Type.Number:
 			lua_code += token.content
@@ -63,13 +218,18 @@ def generate(tokens):
 					pos += 1
 
 			elif token.content == "dedent":
-				condition = indent_state != Construction.Condition or len(tokens) < 2 or (tokens[1].content != "else" and tokens[1].content != "elif")
+				condition = indent_state != Construction.Condition \
+				            or len(tokens) < 2 or (tokens[1].content != "else"
+				                                   and tokens[1].content != "elif")
 				if condition:
 					while indent_level > pos:
 						pos += 1
 						lua_code += " "
 					lua_code += "end\n"
-				pos += len(token.content)
+					pos = 0
+					line += 1
+				else:
+					pos += len(token.content)
 				indent_state = None
 				indent_level = 0
 			elif token.content == "{" or token.content == "[":

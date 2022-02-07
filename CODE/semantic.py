@@ -9,12 +9,6 @@ class SemanticError(AnalyzerError):
         self.token = token
 
 
-def deep_copy_token(token: Token) -> Token:
-    new_token = Token(token.line, token.pos, token.content)
-    new_token.token_type = token.token_type
-    return new_token
-
-
 class SemanticAnalyzer(object):
     def __init__(self, tree: Tree):
         self.tree = ParentedTree.convert(tree)
@@ -62,7 +56,7 @@ class SemanticAnalyzer(object):
         current_known_parameters = self.known_function_parameters.get(current_context)
         if (current_known_parameters is None or
                 current_known_parameters != known_function_parameters):
-            token = deep_copy_token(func.leaves()[0].token)
+            token = func.leaves()[0].token.copy()
             token.line += 1
             token.pos += 1
             raise SemanticError(token,
@@ -79,7 +73,7 @@ class SemanticAnalyzer(object):
         current_variable_identifiers_to_catch -= self.known_identifiers.get(func_name)
         current_variable_identifiers_to_catch -= self.known_identifiers.get('<program>')
         if current_variable_identifiers_to_catch:
-            token = deep_copy_token(identifier_token)
+            token = identifier_token.copy()
             token.line += 1
             token.pos += 1
             raise SemanticError(token,
@@ -96,7 +90,7 @@ class SemanticAnalyzer(object):
         for current_function_to_catch_name in current_function_identifiers_to_catch:
             if (current_function_to_catch_name not in self.known_identifiers and
                     current_function_to_catch_name not in self.known_identifiers[func_name]):
-                token = deep_copy_token(identifier_token)
+                token = identifier_token.copy()
                 token.line += 1
                 token.pos += 1
                 raise SemanticError(token,
@@ -133,7 +127,7 @@ class SemanticAnalyzer(object):
                     if str(node.leaves()[0]) not in self.known_identifiers:
                         if str(node.leaves()[0]) in self.known_identifiers.get(self.__get_current_context(node)):
                             continue
-                        token = deep_copy_token(node.leaves()[0].token)
+                        token = node.leaves()[0].token.copy()
                         token.line += 1
                         token.pos += 1
                         raise SemanticError(
@@ -155,7 +149,7 @@ class SemanticAnalyzer(object):
                     if ((not current_context or
                          str(node.leaves()[0]) not in current_context) and
                             str(node.leaves()[0]) not in self.known_identifiers['<program>']):
-                        token = deep_copy_token(node.leaves()[0].token)
+                        token = node.leaves()[0].token.copy()
                         token.line += 1
                         token.pos += 1
                         raise SemanticError(
