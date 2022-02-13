@@ -52,7 +52,7 @@ def another():
 		print(i)
 
 print("hello" + "world")
-len(test(1, 2, 3, 4))
+e = len(test(1, 2, 3, 4))
 a = dict(test=1, t=2)
 b = [1, 2]
 c = {0: 1, test(a, a, a, a): 2}

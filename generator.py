@@ -1,65 +1,8 @@
-from enum import Enum, auto
-from typing import List
-
-from syntactic import TreeToken
-from lexical import Token, Type
+from parse import TreeToken
+from lexer import Token
 from nltk.tree import ParentedTree
 
 
-class Construction(Enum):
-	Condition = auto()
-	Else = auto()
-	Loop = auto()
-	Function = auto()
-
-
-class Structure(Enum):
-	If = auto()
-	Else = auto()
-	Loop = auto()
-	Function = auto()
-
-
-class State:
-	def __init__(self, structure: Structure, indent_level=0, oneliner: bool = False):
-		super().__init__()
-		self.structure = structure
-		self.oneliner = oneliner
-		self.indent_level = indent_level
-
-
-class Program:
-	line: int = 0
-	pos: int = 0
-	stack: List[State] = []
-	
-	def __init__(self, tokens: list):
-		super().__init__()
-		self.tokens = tokens
-	
-	def next(self):
-		self.tokens.pop(0)
-	
-	def move_to(self, pos=-1, line=-1):
-		if line == -1:
-			line = self.line
-		
-		if pos == -1:
-			pos = self.pos
-		
-		self.line = line
-		self.pos = pos
-	
-	def token(self):
-		return self.tokens[0]
-	
-	def push_state(self, state: State):
-		self.stack.append(state)
-	
-	def pop_state(self) -> State:
-		return self.stack.pop()
-		
-		
 class Generator:
 	
 	def __init__(self):
@@ -84,11 +27,10 @@ class Generator:
 				self.generate_program(child)
 			else:
 				raise Exception()
-		print(self.lua_code)
 		
 	def generate_function(self, tree: ParentedTree):
 		start_token: Token = tree[0].token
-		self.go_to_pos(start_token.pos, start_token.line)
+		self.go_to(start_token)
 		self.add("function ", 4)
 		self.generate_terminal(tree[1])
 		self.add("(")
@@ -133,7 +75,7 @@ class Generator:
 	
 	def generate_condition(self, tree: ParentedTree):
 		if_token: Token = tree[0].token
-		self.go_to_pos(if_token.pos, if_token.line)
+		self.go_to(if_token)
 		self.add(if_token.content)
 		cond = tree[1]
 		self.generate_conditional(cond)
@@ -148,7 +90,7 @@ class Generator:
 	def generate_conditional(self, tree: ParentedTree):
 		self.generate_boolean_expression(tree[0])
 		colon: Token = tree[1].token
-		self.go_to_pos(colon.pos, colon.line)
+		self.go_to(colon)
 		self.add(" then", 1)
 		self.generate_block(tree[2])
 		
@@ -157,7 +99,7 @@ class Generator:
 		
 	def generate_otherwise(self, tree: ParentedTree):
 		first_token: Token = tree[0].token
-		self.go_to_pos(first_token.pos, first_token.line)
+		self.go_to(first_token)
 		if len(tree) == 2:
 			self.add("elseif", 4)
 			self.generate_conditional(tree[1])
@@ -183,7 +125,7 @@ class Generator:
 	
 	def generate_while(self, tree: ParentedTree):
 		while_token: Token = tree[0].token
-		self.go_to_pos(while_token.pos, while_token.line)
+		self.go_to(while_token)
 		self.add(while_token.content)
 		self.generate_boolean_expression(tree[1])
 		colon: Token = tree[2].token
@@ -192,26 +134,26 @@ class Generator:
 	
 	def generate_for(self, tree: ParentedTree):
 		for_token: Token = tree[0].token
-		self.go_to_pos(for_token.pos, for_token.line)
+		self.go_to(for_token)
 		self.add(for_token.content)
 		self.generate_terminal(tree[1])
 		in_token: Token = tree[2].token
-		self.go_to_pos(in_token.pos, in_token.line)
+		self.go_to(in_token)
 		is_collection = isinstance(tree[3], ParentedTree)
 		if is_collection:
 			self.add(in_token.content)
 			first: Token = tree[3].leaves()[0].token
-			self.go_to_pos(first.pos, first.line)
+			self.go_to(first)
 			self.add("pairs(", 0)
 			self.generate_collection(tree[3])
 			self.add(")", 0)
 		else:
 			self.add("=", 2)
 			range: Token = tree[3].token
-			self.go_to_pos(range.pos, range.line)
+			self.go_to(range)
 			self.pos += len(range.content)
 			bracket: Token = tree[4].token
-			self.go_to_pos(bracket.pos, bracket.line)
+			self.go_to(bracket)
 			self.pos += len(bracket.content)
 			
 			has_both = tree[6].token.content == ","
@@ -224,7 +166,7 @@ class Generator:
 				self.add("0, ", 0)
 			
 			first: Token = end.leaves()[0].token
-			self.go_to_pos(first.pos, first.line)
+			self.go_to(first)
 			if len(end.leaves()) == 1:
 				self.add(str(int(first.content) - 1), len(first.content))
 			else:
@@ -233,11 +175,11 @@ class Generator:
 				self.add(" - 1)", 0)
 			
 			bracket: Token = tree[-3].token
-			self.go_to_pos(bracket.pos, bracket.line)
+			self.go_to(bracket)
 			self.pos += len(bracket.content)
 		
 		colon: Token = tree[-2].token
-		self.go_to_pos(colon.pos, colon.line)
+		self.go_to(colon)
 		self.add(" do", 1)
 		self.generate_block(tree[-1])
 	
@@ -247,8 +189,10 @@ class Generator:
 	
 	def generate_sentence_body(self, tree: ParentedTree):
 		internal = tree[0]
-		if internal.label() == "<any_expressions>":
-			self.generate_any_expressions(internal)
+		if internal.label() == "<function_call>":
+			self.generate_function_call(internal)
+		elif internal.label() == "<String>":
+			self.generate_terminal(internal)
 		elif internal.label() == "<output>":
 			self.generate_output(internal)
 		elif internal.label() == "<assignment>":
@@ -433,7 +377,7 @@ class Generator:
 	
 	def generate_identifiers(self, tree: ParentedTree):
 		id_token: Token = tree[0][0].token
-		self.go_to_pos(id_token.pos, id_token.line)
+		self.go_to(id_token)
 		self.add(id_token.content)
 		if len(tree) > 1:
 			self.add(",")
@@ -495,7 +439,7 @@ class Generator:
 	
 	def generate_token(self, tree_token: TreeToken):
 		token = tree_token.token
-		self.go_to_pos(token.pos, token.line)
+		self.go_to(token)
 		self.add(token.content)
 	
 	def add(self, text: str, move: int = -1):

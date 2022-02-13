@@ -1,4 +1,3 @@
-# do not remove this rule, it's necessary for Earley parser to work
 S -> <program>
 
 <program> -> <sentence> | <function> | <sentence> <program> | <function> <program>
@@ -24,7 +23,7 @@ S -> <program>
 <simple_sentence> -> <sentence_body> newline | newline
 <complex_sentence> -> <condition> | <loop>
 <sentence> -> <simple_sentence> | <complex_sentence>
-<sentence_body> -> <any_expressions> | <output> | <assignment> | <special_body>
+<sentence_body> -> <function_call> | <String> | <output> | <assignment> | <special_body>
 <special_body> -> pass | return <any_expressions>
 <sentences> -> <sentence> <sentences> | <sentence>
 <block> -> <simple_sentence> | newline indent <sentences> dedent

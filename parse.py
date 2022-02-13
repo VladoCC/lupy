@@ -2,13 +2,11 @@ from collections import defaultdict
 from nltk.tree import Tree
 import re
 
-from exceptions import SyntacticError, NoNewLineError
+from errors import SyntacticError, NoNewLineError
 
 
 class Rule(object):
 	def __init__(self, lhs, rhs):
-		# Represents the rule 'lhs -> rhs', where lhs is a non-terminal and
-		# rhs is a list of non-terminals and terminals.
 		self.lhs, self.rhs = lhs, rhs
 
 	def __contains__(self, sym):
@@ -17,7 +15,6 @@ class Rule(object):
 	def __eq__(self, other):
 		if type(other) is Rule:
 			return self.lhs == other.lhs and self.rhs == other.rhs
-
 		return False
 
 	def __getitem__(self, i):
@@ -34,19 +31,9 @@ class Rule(object):
 
 
 class Grammar(object):
-	def __init__(self):
-		# The rules are represented as a dictionary from L.H.S to R.H.S.
+	def __init__(self, filepath="grammar/grammar.txt"):
 		self.rules = defaultdict(list)
-
-	def add(self, rule):
-		self.rules[rule.lhs].append(rule)
-
-	@staticmethod
-	def load_grammar(file):
-
-		grammar = Grammar()
-
-		with open(file) as f:
+		with open(filepath, "r") as f:
 			for line in f:
 				line = line.strip()
 
@@ -57,9 +44,10 @@ class Grammar(object):
 				entries = line.split('->')
 				lhs = entries[0].strip()
 				for rhs in entries[1].split('|'):
-					grammar.add(Rule(lhs, rhs.strip().split()))
+					self.add(Rule(lhs, rhs.strip().split()))
 
-		return grammar
+	def add(self, rule):
+		self.rules[rule.lhs].append(rule)
 
 	def __repr__(self):
 		return self.__str__()
@@ -67,7 +55,7 @@ class Grammar(object):
 	def __str__(self):
 		s = [str(r) for r in self.rules['S']]
 
-		for nt, rule_list in self.rules.iteritems():
+		for nt, rule_list in self.rules.items():
 			if nt == 'S':
 				continue
 
@@ -75,7 +63,6 @@ class Grammar(object):
 
 		return '\n'.join(s)
 
-	# Returns the rules for a given Non-terminal.
 	def __getitem__(self, nt):
 		return self.rules[nt]
 
@@ -90,21 +77,13 @@ class Grammar(object):
 
 
 class EarleyState(object):
-	GAM = '<GAM>'
-
-	def __init__(self, rule, dot=0, sent_pos=0, chart_pos=0, back_pointers=None):
-		# CFG Rule.
+	def __init__(self, rule=Rule("S", ["<program>"]), dot=0, sent_pos=0, chart_pos=0, back_pointers=None):
 		if back_pointers is None:
 			back_pointers = []
 		self.rule = rule
-		# Dot position in the rule.
 		self.dot = dot
-		# Sentence position.
 		self.sent_pos = sent_pos
-		# Chart index.
 		self.chart_pos = chart_pos
-		# Pointers to child states (if the given state was generated using
-		# Completer).
 		self.back_pointers = back_pointers
 
 	def __eq__(self, other):
@@ -135,15 +114,29 @@ class EarleyState(object):
 
 	def is_complete(self):
 		return len(self) == self.dot
-
-	@staticmethod
-	def init():
-		return EarleyState(Rule(EarleyState.GAM, ['S']))
+	
+	def get_helper(self, tokens):
+		children = []
+		for s in self.rule.rhs:
+			pointer = None
+			index = -1
+			for i in range(len(self.back_pointers)):
+				p = self.back_pointers[i]
+				if p.rule.lhs == s:
+					pointer = p
+					index = i
+					break
+			if pointer is None:
+				token = TreeToken(tokens.pop(0))
+				children.append(token if not s.startswith("<") else Tree(s, [token]))
+			else:
+				self.back_pointers.pop(index)
+				children.append(pointer.get_helper(tokens))
+		return Tree(self.rule.lhs, children)
 
 
 class ChartEntry(object):
 	def __init__(self, states):
-		# List of Earley states.
 		self.states = states
 
 	def __iter__(self):
@@ -164,9 +157,8 @@ class ChartEntry(object):
 
 
 class Chart(object):
-	def __init__(self, entries):
-		# List of chart entries.
-		self.entries = entries
+	def __init__(self, len):
+		self.entries = [(ChartEntry([]) if i > 0 else ChartEntry([EarleyState()])) for i in range(len)]
 
 	def __getitem__(self, i):
 		return self.entries[i]
@@ -180,10 +172,6 @@ class Chart(object):
 	def __str__(self):
 		return '\n\n'.join([("Chart[%d]:\n" % i) + str(entry) for i, entry in enumerate(self.entries)])
 
-	@staticmethod
-	def init(l):
-		return Chart([(ChartEntry([]) if i > 0 else ChartEntry([EarleyState.init()])) for i in range(l)])
-
 
 class TreeToken:
 	def __init__(self, token):
@@ -194,27 +182,29 @@ class TreeToken:
 
 
 class EarleyParser(object):
-	def __init__(self, tokens, grammar=Grammar.load_grammar("grammar/grammar.txt")):
-		success = False
-		for i in range(len(tokens)):
-			if tokens[len(tokens) - i - 1].content == "newline":
-				success = True
-				break
-			elif tokens[len(tokens) - i - 1].content == "dedent":
-				continue
-			else:
-				break
-		if not success:
-			raise NoNewLineError()
+	def __init__(self, tokens, grammar=Grammar()):
 		self.tokens = tokens.copy()
+		self.check_newline()
 		sentence = ""
 		for token in tokens:
 			sentence += token.as_symbol() + " "
 		sentence = sentence[:-1]
 		self.words = sentence.split()
 		self.grammar = grammar
+		self.chart = Chart(len(self.words) + 1)
 
-		self.chart = Chart.init(len(self.words) + 1)
+	def check_newline(self):
+		success = False
+		for i in range(len(self.tokens)):
+			if self.tokens[-i - 1].content == "newline":
+				success = True
+				break
+			elif self.tokens[-i - 1].content == "dedent":
+				continue
+			else:
+				break
+		if not success:
+			raise NoNewLineError()
 
 	def predictor(self, state, pos):
 		for rule in self.grammar[state.next()]:
@@ -240,13 +230,11 @@ class EarleyParser(object):
 												back_pointers=(prev_state.back_pointers + [state])))
 
 	def parse(self):
-		def is_terminal(state):
-			return self.grammar.is_terminal(state.next())
-
 		for i in range(len(self.words) + 1):
 			for state in self.chart[i]:
 				if not state.is_complete():
-					if is_terminal(state):
+					is_terminal = self.grammar.is_terminal(state.next())
+					if is_terminal:
 						self.scanner(state, i)
 					else:
 						self.predictor(state, i)
@@ -256,27 +244,8 @@ class EarleyParser(object):
 		return self._get()
 
 	def _get(self):
-		def get_helper(state):
-			children = []
-			for s in state.rule.rhs:
-				pointer = None
-				index = -1
-				for i in range(len(state.back_pointers)):
-					p = state.back_pointers[i]
-					if p.rule.lhs == s:
-						pointer = p
-						index = i
-						break
-				if pointer is None:
-					token = TreeToken(self.tokens.pop(0))
-					children.append(token if not s.startswith("<") else Tree(s, [token]))
-				else:
-					state.back_pointers.pop(index)
-					children.append(get_helper(pointer))
-			return Tree(state.rule.lhs, children)
-
 		for state in self.chart[-1]:
 			if state.is_complete() and state.rule.lhs == 'S':
-				return get_helper(state)
+				return state.get_helper(self.tokens)
 
 		raise SyntacticError

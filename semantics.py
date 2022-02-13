@@ -1,12 +1,6 @@
 from nltk.tree import Tree, ParentedTree
-from lexical import Token
-from exceptions import AnalyzerError
-
-
-class SemanticError(AnalyzerError):
-    def __init__(self, token: Token, *args):
-        super(SemanticError, self).__init__(*args)
-        self.token = token
+from lexer import Token
+from errors import SemanticError
 
 
 class SemanticAnalyzer(object):
@@ -28,7 +22,7 @@ class SemanticAnalyzer(object):
 
     def check_tree(self):
         if not self.tree:
-            raise SemanticError(Token(0, 0), "Semantic Error\nTree wasn\'t set")
+            raise SemanticError("Semantic Error\nTree wasn\'t set")
         self.__check_identifiers()
 
     def __get_current_context(self, node: ParentedTree) -> str:
@@ -59,8 +53,7 @@ class SemanticAnalyzer(object):
             token = func.leaves()[0].token.copy()
             token.line += 1
             token.pos += 1
-            raise SemanticError(token,
-                                "Semantic Error\nParameters in the declaration and function call do not match:\n{}".format(
+            raise SemanticError("Semantic Error\nParameters in the declaration and function call do not match:\n{}".format(
                                     str(token)
                                 ))
 
@@ -76,8 +69,7 @@ class SemanticAnalyzer(object):
             token = identifier_token.copy()
             token.line += 1
             token.pos += 1
-            raise SemanticError(token,
-                                "Semantic Error\nWhen the function was called, the variable used in it was not declared:\n{}".format(
+            raise SemanticError("Semantic Error\nWhen the function was called, the variable used in it was not declared:\n{}".format(
                                     str(token)
                                 ))
 
@@ -93,11 +85,8 @@ class SemanticAnalyzer(object):
                 token = identifier_token.copy()
                 token.line += 1
                 token.pos += 1
-                raise SemanticError(token,
-                                    "Semantic Error\nWhen the function was called, the function name used in it was not declared:\n{}".format(
-                                        str(token)
-                                    )
-                                    )
+                raise SemanticError(
+                    "Semantic Error\nWhen the function was called, the function name used in it was not declared:\n{}".format(str(token)))
 
     def __check_identifiers(self) -> None:
         for node in self.tree.subtrees():
@@ -131,7 +120,6 @@ class SemanticAnalyzer(object):
                         token.line += 1
                         token.pos += 1
                         raise SemanticError(
-                            token,
                             "Semantic Error\nThe function identifier was used before it was announced:\n{}".format(
                                 str(token)
                             ))
@@ -153,7 +141,6 @@ class SemanticAnalyzer(object):
                         token.line += 1
                         token.pos += 1
                         raise SemanticError(
-                            token,
                             "Semantic Error\nThe identifier was encountered before it was announced:\n{}".format(
                                 str(token)
                             )

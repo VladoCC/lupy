@@ -1,8 +1,8 @@
-from exceptions import SyntacticError
+from errors import SyntacticError
 from main import analyzer, EarleyParser
-from lexical import Type, TokenIdentifier, TokenKeyword, TokenOperator, TokenNumber, TokenDivider, TokenString, \
+from lexer import Type, TokenIdentifier, TokenKeyword, TokenOperator, TokenNumber, TokenDivider, TokenString, \
 	TokenIndent, LexicalError
-from semantic import SemanticError, SemanticAnalyzer
+from semantics import SemanticError, SemanticAnalyzer
 import unittest
 
 

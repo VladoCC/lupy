@@ -2,7 +2,7 @@ import copy
 from enum import Enum
 import re
 
-from exceptions import LexicalError, IndentError
+from errors import LexicalError, IndentError
 
 
 class Type(Enum):
