@@ -10,7 +10,7 @@ For now LuPy supports only a few functions from standard library:
 `dict()` - translates into table declaration.
 `len()` - translates into `#`, which when placed before table returns length of it.   
    
-Any other function are not officially supported, but would work in [unsafe mode](#sematics-and-safe-mode) if they have the same name in both languages.
+Any other function are not officially supported, but would work in [unsafe mode](#sematics-and-safe-mode) if they have the same name in both languages. For example `type()` function works like that.
 
 ### Python collections vs Lua tables
 LuPy translates all the collections (lists, dictionaries) from Python into Lua tables. 
