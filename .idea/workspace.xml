@@ -19,50 +19,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2fadcbf1-348c-4605-a67a-189ae8150a2f" name="Default Changelist" comment="Rework">
-      <change afterPath="$PROJECT_DIR$/execution.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.github/workflows/python-package.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/python-package.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.github/workflows/python-publish.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/lupy.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/lupy.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="2fadcbf1-348c-4605-a67a-189ae8150a2f" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CODE/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CODE/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CODE/exceptions.py" beforeDir="false" afterPath="$PROJECT_DIR$/errors.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CODE/generator.py" beforeDir="false" afterPath="$PROJECT_DIR$/generator.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CODE/grammar/grammar.txt" beforeDir="false" afterPath="$PROJECT_DIR$/grammar/grammar.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CODE/input/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/input/test.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CODE/lexical.py" beforeDir="false" afterPath="$PROJECT_DIR$/lexer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CODE/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CODE/output/test.lua" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CODE/semantic.py" beforeDir="false" afterPath="$PROJECT_DIR$/semantics.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CODE/syntactic.py" beforeDir="false" afterPath="$PROJECT_DIR$/parse.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CODE/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/test.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CODE/ui.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/DOCS/CODING/Code issue list.xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/DOCS/CODING/Coding Recommendations.docx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/DOCS/CODING/Inspection Regulations.docx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/DOCS/CODING/Metrics Regulations.docx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/DOCS/CODING/Tasks States Model.docx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/DOCS/DESIGN/Software Design Specification.docx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/DOCS/DESIGN/UML/chart.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/DOCS/DESIGN/UML/chart_entry.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/DOCS/DESIGN/UML/earley.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/DOCS/DESIGN/UML/earley_state.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/DOCS/DESIGN/UML/generator.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/DOCS/DESIGN/UML/grammar.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/DOCS/DESIGN/UML/lexical.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/DOCS/DESIGN/UML/rule.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/DOCS/DESIGN/UML/semantic.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/DOCS/DESIGN/UML/ui.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/DOCS/PROJECT PLAN/Software Project Plan.xls" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/DOCS/REQUIREMENTS/Marketing Requirements Specification.pptx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/DOCS/REQUIREMENTS/Software Requirements Specification.docx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/DOCS/TESTING/Requirements Traceability Matrix.xls" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/DOCS/TESTING/Software Test Logs.doc" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/DOCS/TESTING/Software Test Plan.doc" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Курсовая (Коллективная разработка).docx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Отчёт по лабораторной (ТЯПИК).docx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/execution.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -124,7 +84,7 @@
       <recent name="D:\GitRepos\lupy\CODE" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.main">
+  <component name="RunManager" selected="Python tests.Python tests in test.py">
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="lupy" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -168,8 +128,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.main" />
         <item itemvalue="Python tests.Python tests in test.py" />
+        <item itemvalue="Python.main" />
       </list>
     </recent_temporary>
   </component>
@@ -189,7 +149,8 @@
       <workItem from="1644112845864" duration="26778000" />
       <workItem from="1644196578856" duration="35516000" />
       <workItem from="1644303730843" duration="3131000" />
-      <workItem from="1644722587769" duration="14099000" />
+      <workItem from="1644722587769" duration="14401000" />
+      <workItem from="1644812449467" duration="1402000" />
     </task>
     <task id="LOCAL-00001" summary="Add idiomatic way for copying tokens">
       <created>1644196863992</created>
@@ -205,7 +166,14 @@
       <option name="project" value="LOCAL" />
       <updated>1644247292344</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Refactor project">
+      <created>1644761126801</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1644761126801</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -228,7 +196,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Add idiomatic way for copying tokens" />
     <MESSAGE value="Rework code generation" />
-    <option name="LAST_COMMIT_MESSAGE" value="Rework code generation" />
+    <MESSAGE value="Refactor project" />
+    <option name="LAST_COMMIT_MESSAGE" value="Refactor project" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -243,7 +212,7 @@
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/lupy$ui.coverage" NAME="ui Coverage Results" MODIFIED="1644063071530" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/CODE" />
-    <SUITE FILE_PATH="coverage/lupy$main.coverage" NAME="main Coverage Results" MODIFIED="1644759481033" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/lupy$main.coverage" NAME="main Coverage Results" MODIFIED="1644760973088" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/lupy$.coverage" NAME=" Coverage Results" MODIFIED="1644733730390" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

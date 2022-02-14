@@ -52,8 +52,8 @@ def main():
 
 def show_help():
 	print("Help:")
-	print("  -i <path> - path to input file or directory")
-	print("  -o <path> - path to output directory")
+	print("  -i <path> - path to input file or directory. Default: `./input`")
+	print("  -o <path> - path to output directory. Default: `./output`")
 
 
 def process(input, output):
