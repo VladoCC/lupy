@@ -16,10 +16,11 @@ analyzer = LexicalAnalyzer()
 generator = Generator()
 
 
-def translate(code):
+def translate(code, safe=True):
 	tokens = analyzer.parse(code)
 	tree = ParentedTree.convert(EarleyParser(tokens).parse())
-	SemanticAnalyzer(tree).check_tree()
+	if safe:
+		SemanticAnalyzer(tree).check_tree()
 	return generator.generate(tree)
 
 
@@ -28,14 +29,20 @@ def main():
 	args.pop(0)
 	input = None
 	output = None
+	safe = True
 	help = len(args) > 0
-	while len(args) > 1:
+	while len(args) > 0:
 		arg = args.pop(0)
 		if arg == "-i":
-			input = args.pop(0)
-			help = False
+			if len(args) > 0:
+				input = args.pop(0)
+				help = False
 		elif arg == "-o":
-			output = args.pop(0)
+			if len(args) > 0:
+				output = args.pop(0)
+				help = False
+		elif arg == "-unsafe":
+			safe = False
 			help = False
 		else:
 			break
@@ -47,7 +54,7 @@ def main():
 			input = "./input"
 		if output is None:
 			output = "./output"
-		process(input, output)
+		process(input, output, safe)
 
 
 def show_help():
@@ -56,14 +63,14 @@ def show_help():
 	print("  -o <path> - path to output directory. Default: `./output`")
 
 
-def process(input, output):
+def process(input, output, safe=True):
 	print("Translation started")
 	print("Looking for .py files in {} dir".format(input))
+	files = []
 	if os.path.isdir(input):
 		files = [(join(dirpath, file), file) for dirpath, _, filenames in os.walk(input) for file in filenames if isfile(join(dirpath, file)) and file.endswith(".py")]
-		print(files)
 	elif os.path.isfile(input):
-		files = [input]
+		files.append(input)
 	else:
 		print("Error: input file/dir not found")
 		print()
@@ -78,7 +85,7 @@ def process(input, output):
 		py_code = open(path, "r").read()
 		error = None
 		try:
-			lua_code = translate(py_code)
+			lua_code = translate(py_code, safe)
 		except AnalyzerError as e:
 			error = e
 		

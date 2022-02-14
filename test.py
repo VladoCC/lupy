@@ -1,5 +1,5 @@
 from errors import SyntacticError
-from main import analyzer, EarleyParser
+from lupy import analyzer, EarleyParser
 from lexer import Type, TokenIdentifier, TokenKeyword, TokenOperator, TokenNumber, TokenDivider, TokenString, \
 	TokenIndent, LexicalError
 from semantics import SemanticError, SemanticAnalyzer
