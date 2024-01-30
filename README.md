@@ -75,7 +75,7 @@ Lexer also does all the preprocessing of data, converting names (e.g. identifier
 LuPy uses [Earley Parser](https://en.wikipedia.org/wiki/Earley_parser) for checking that input is a part of supported subset of Python and building [AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree) of the program.   
 You can find grammar used in LuPy: [here](https://github.com/VladoCC/lupy/blob/main/grammar/grammar.txt).   
 
-### Sematics and Safe mode
+### Semantics and Safe mode
 LuPy does a list of checks on AST before generating a Lua program from it to ensure semantical correctness of original code. 
 This stage can be skipped by running LuPy in [unsafe mode](#command-line).
 
